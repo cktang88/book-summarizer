@@ -1,22 +1,30 @@
-from fastapi import APIRouter, UploadFile, HTTPException
-from ...utils.storage import save_upload_file
+from fastapi import APIRouter, UploadFile, HTTPException, File
+from ...processor import DocumentProcessor
+import os
 
 router = APIRouter()
 
+# Initialize document processor
+BOOKS_DIR = os.getenv("BOOKS_DIR", "./books")
+doc_processor = DocumentProcessor(BOOKS_DIR)
+
 
 @router.post("/upload")
-async def upload_file(file: UploadFile):
+async def upload_file(file: UploadFile = File(...)):
     try:
         if not file.filename:
             raise ValueError("No filename provided")
 
-        file_id, file_path = await save_upload_file(file)
+        # Process the document
+        result = await doc_processor.process_document(file)
 
         return {
-            "id": file_id,
-            "url": f"/books/{file_path.name}",  # URL where the file can be accessed
+            "bookId": result.book_id,
+            "title": result.title,
+            "formats": ["text", "markdown"],
+            "metadata": result.metadata,
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to upload file")
+        raise HTTPException(status_code=500, detail=str(e))

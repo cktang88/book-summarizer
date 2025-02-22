@@ -1,9 +1,24 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
+interface UploadResponse {
+  bookId: string;
+  title: string;
+  formats: string[];
+  metadata: {
+    title: string;
+    file_type: string;
+    formats: string[];
+    chapters: Array<{
+      title: string;
+      length: number;
+    }>;
+  };
+}
+
 export async function uploadFile(
   file: File,
   onProgress?: (progress: number) => void
-): Promise<{ id: string; url: string }> {
+): Promise<UploadResponse> {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -16,7 +31,7 @@ export async function uploadFile(
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || "Failed to upload file");
+      throw new Error(error.detail || "Failed to upload file");
     }
 
     return await response.json();

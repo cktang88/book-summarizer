@@ -17,25 +17,27 @@
 
 ### 📑 Document Processing System
 
-- [ ] Set up file storage system (Do this first as other features depend on it)
-  - Create directory structure for book storage
-  - Implement metadata handling
-  - Add cache management for processed files
+- [x] Set up file storage system (Do this first as other features depend on it)
+  - [x] Create directory structure for book storage
+  - [x] Implement metadata handling
+  - [x] Add cache management for processed files
 - [ ] Create document conversion service
-  - Integrate pandoc for epub/mobi conversion to text
-  - Integrate PyPDF2 for PDF processing
-  - Implement unified text extraction interface
-  - Add text cleaning and preprocessing
+  - [ ] Integrate pandoc for epub/mobi conversion
+  - [ ] Integrate PyPDF2 for PDF processing
+  - [ ] Implement unified text extraction interface
+  - [ ] Add text cleaning and preprocessing
+  - [ ] Support both text and markdown output formats
+  - [ ] Add error handling and fallbacks
 - [ ] Implement smart chapter detection
-  - Create chapter boundary detection algorithm
-  - Handle different book formats' chapter markers
-  - Implement section/subsection detection
-  - Add metadata extraction (title, chapters, sections)
-- [ ] Build upload endpoint
-  - Add multi-format file validation (PDF/epub/mobi)
-  - Implement file size checks (support 500+ page books)
-  - Set up proper error handling
-  - Add upload progress tracking
+  - [ ] Create chapter boundary detection algorithm
+  - [ ] Handle different book formats' chapter markers
+  - [ ] Implement section/subsection detection
+  - [ ] Add metadata extraction (title, chapters, sections)
+- [x] Build upload endpoint
+  - [x] Add multi-format file validation (PDF/epub/mobi)
+  - [x] Implement file size checks (support 500+ page books)
+  - [x] Set up proper error handling
+  - [x] Add upload progress tracking
 
 ### 🤖 Summary Generation System
 

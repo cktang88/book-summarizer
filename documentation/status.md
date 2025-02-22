@@ -4,16 +4,16 @@
 
 ### 🎯 Initial Project Setup
 
-- [ ] Initialize frontend project with Vite + React + TypeScript
-  - Set up Tailwind CSS and Shadcn/ui
-  - Configure project structure following feature-based organization
-  - Set up environment variables (API URL, etc.)
-  - Add dark/light mode infrastructure
-- [ ] Initialize backend project with FastAPI
-  - Set up Python environment with uv package manager
-  - Configure basic FastAPI application structure
-  - Set up environment variables (API keys, storage paths)
-  - Install and configure pandoc for document conversion
+- [x] Initialize frontend project with Vite + React + TypeScript
+  - [x] Set up Tailwind CSS and Shadcn/ui
+  - [x] Configure project structure following feature-based organization
+  - [x] Set up environment variables (API URL, etc.)
+  - [x] Add dark/light mode infrastructure
+- [x] Initialize backend project with FastAPI
+  - [x] Set up Python environment with uv package manager
+  - [x] Configure basic FastAPI application structure
+  - [x] Set up environment variables (API keys, storage paths)
+  - [x] Install and configure pandoc for document conversion
 
 ### 📑 Document Processing System
 
@@ -21,7 +21,6 @@
   - Create directory structure for book storage
   - Implement metadata handling
   - Add cache management for processed files
-  - Set up cleanup routines for temporary files
 - [ ] Create document conversion service
   - Integrate pandoc for epub/mobi conversion to text
   - Integrate PyPDF2 for PDF processing

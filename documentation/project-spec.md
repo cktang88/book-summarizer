@@ -6,13 +6,15 @@ The Book Summarizer is an interactive web application that allows users to uploa
 
 ## Core Features
 
-### 1. PDF Upload & Processing
+### 1. Document Upload & Processing
 
-- Users can upload PDF/epub/etc files through a drag-and-drop interface or file selector
+- Users can upload PDF/epub/mobi files through a drag-and-drop interface or file selector
 - System validates file type and size
-- pdf/epub/mobi/etc is processed and converted to text format
-- Text is automatically split into chapters based on document structure
-- Progress indicator shows conversion status
+- Documents are processed based on format:
+  - EPUB: Native processing using epub structure for accurate chapter detection
+  - PDF: Text extraction with smart chapter detection
+  - Other formats: Conversion to text with basic chapter detection
+- Progress indicator shows processing status
 
 ### 2. Book Summary Generation
 
@@ -32,18 +34,25 @@ The Book Summarizer is an interactive web application that allows users to uploa
 - Visual indicators show which sections are expanded/collapsed
 - Loading states for when new summaries are being generated
 
-### 4. Caching System
+### 4. Storage System
 
-- Processed book text is cached as .txt file
-- Chapter summaries are cached in book-specific folders
-- Cache structure:
+- Each book has its own directory with:
+  - Individual chapter files for easy access
+  - Book metadata (title, chapters, etc)
+  - Chapter summaries cached separately
+- Storage structure:
   ```
-  /cache
-    /book-title/
-      book.txt
-      1-summary.txt
-      2-summary.txt
-      ...
+  /books
+    /book-id/
+      metadata.json     # Book info and chapter metadata
+      chapters/        # Extracted chapter content
+        chapter-1.txt
+        chapter-2.txt
+        ...
+      summaries/       # Generated summaries
+        chapter-1.txt
+        chapter-2.txt
+        main.txt      # Overall book summary
   ```
 
 ## User Flow

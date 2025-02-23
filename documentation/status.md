@@ -22,17 +22,19 @@
   - [x] Implement metadata handling
   - [x] Add cache management for processed files
 - [ ] Create document conversion service
-  - [ ] Integrate pandoc for epub/mobi conversion
-  - [ ] Integrate PyPDF2 for PDF processing
-  - [ ] Implement unified text extraction interface
-  - [ ] Add text cleaning and preprocessing
-  - [ ] Support both text and markdown output formats
-  - [ ] Add error handling and fallbacks
+  - [x] Implement native epub processing with EbookLib
+  - [x] Integrate PyPDF2 for PDF processing
+  - [ ] Integrate pandoc for mobi conversion
+  - [x] Implement unified text extraction interface
+  - [x] Add text cleaning and preprocessing
+  - [x] Support both text and markdown output formats
+  - [x] Add error handling and fallbacks
 - [ ] Implement smart chapter detection
-  - [ ] Create chapter boundary detection algorithm
-  - [ ] Handle different book formats' chapter markers
-  - [ ] Implement section/subsection detection
-  - [ ] Add metadata extraction (title, chapters, sections)
+  - [x] Create chapter boundary detection algorithm
+  - [x] Handle epub chapter markers natively
+  - [ ] Handle PDF chapter markers
+  - [x] Implement section/subsection detection
+  - [x] Add metadata extraction (title, chapters, sections)
 - [x] Build upload endpoint
   - [x] Add multi-format file validation (PDF/epub/mobi)
   - [x] Implement file size checks (support 500+ page books)

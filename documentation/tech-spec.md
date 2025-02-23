@@ -11,7 +11,10 @@
 ### Backend
 
 - **Runtime**: Python + FastAPI, use `uv` for package manager
-- **PDF Processing**: PyPDF2 or pdf2text or pandoc
+- **Document Processing**:
+  - **PDF**: PyPDF2 for text extraction
+  - **EPUB**: EbookLib for native epub parsing
+  - **Other**: pandoc for mobi and other formats
 - **LLM**: Gemini flash 2
 - **Storage**: Local filesystem
 
@@ -96,12 +99,17 @@ Simple file-based storage:
 ```
 /books
   /{book-id}/
-    book.txt           # Extracted text
-    metadata.json      # Title, chapters
+    metadata.json      # Book metadata (title, chapters, etc)
+    chapters/
+      chapter-1.txt   # Individual chapter content
+      chapter-2.txt
+      chapter-3.txt
+      ...
     summaries/
-      main.txt
-      chapter1.txt
-      chapter1-1.txt   # Deeper summaries
+      chapter-1.txt   # Chapter summaries
+      chapter-2.txt
+      chapter-3.txt
+      main.txt        # Overall book summary
 ```
 
 ## Setup

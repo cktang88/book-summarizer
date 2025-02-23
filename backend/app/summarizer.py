@@ -41,18 +41,21 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
 
     If possible, try to use the author's voice and style, and choose words that convey the mood and tone of the chapter.
     
-    Directly describe what happens, skip any filler words like `this passage says...` or anything like that. Be sure to describe all main events, new characters appearances and characterizations, locations, important realizations by characters, any peculiar narrator musings, etc.
+    Directly describe what happens, skip any filler words like `this passage says...` or anything like that. 
+    
+    Be sure to describe all main events, new characters appearances and characterizations, locations, important realizations by characters, any peculiar narrator musings, etc.
+
+    If any important character motivations or internal or external conflicts are revealed, describe them.
+
+    Note POV shifts, time jumps, backstory narration, or format changes (letters, poems, etc.).
 
     """
 
     # Create prompt based on depth
     depth_prompts = {
-        1: "Provide a very concise 2-3 sentence summary:",
-        2: "Summarize the key points in 1-2 paragraphs:",
-        3: (
-            "Provide a detailed summary in 3-4 paragraphs, including "
-            "main ideas and details:"
-        ),
+        1: "Write a short 2-3 sentence summary, include only on the most important events and developments. Feel free to omit minor details.",
+        2: "Length: 1-2 paragraphs:",
+        3: "Length: 3-4 paragraphs:",
         4: (
             "Give a comprehensive summary. First think of how to break up the chapter into sections (eg. each time the chapter switches POV or location changes). Then summarize each section individually and thoroughly. Be sure to include all important details:"
         ),

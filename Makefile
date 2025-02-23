@@ -1,4 +1,4 @@
-.PHONY: install install-frontend install-backend dev dev-frontend dev-backend clean
+.PHONY: install install-frontend install-backend dev dev-frontend dev-backend clean test-summarizer
 
 # Install all dependencies
 install: install-frontend install-backend
@@ -30,4 +30,17 @@ clean:
 	rm -rf backend/__pycache__
 	rm -rf backend/app/__pycache__
 	rm -rf backend/.venv
-	find . -type d -name ".pytest_cache" -exec rm -rf {} + 
+	find . -type d -name ".pytest_cache" -exec rm -rf {} +
+
+# Test the chapter summarizer with different depth levels
+test-summarizer:
+	@echo "Testing chapter summarizer..."
+	@if [ -z "$(CHAPTER_FILE)" ]; then \
+		echo "Error: CHAPTER_FILE is required. Usage: make test-summarizer CHAPTER_FILE=books/your-book/chapters/chapter.txt"; \
+		exit 1; \
+	fi
+	cd backend && . .venv/bin/activate && \
+	for depth in 1 2 3 4; do \
+		echo "\nTesting depth $$depth:"; \
+		python -m app.summarizer "$(CHAPTER_FILE)" --depth $$depth; \
+	done 

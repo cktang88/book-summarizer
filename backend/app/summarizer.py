@@ -36,6 +36,15 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
     if depth not in range(1, 5):
         raise ValueError("Depth must be between 1 and 4")
 
+    system_prompt = """
+    You are an efficient book summarizer. You will be given a chapter from a book. Your job is to summarize the chapter in a way that is easy to understand and to the point. Be extremely concise - fit as much information as possible into as few words as possible.
+
+    If possible, try to use the author's voice and style, and choose words that convey the mood and tone of the chapter.
+    
+    Directly describe what happens, skip any filler words like `this passage says...` or anything like that. Be sure to describe all main events, new characters appearances and characterizations, locations, important realizations by characters, any peculiar narrator musings, etc.
+
+    """
+
     # Create prompt based on depth
     depth_prompts = {
         1: "Provide a very concise 2-3 sentence summary:",
@@ -45,12 +54,11 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
             "main ideas and details:"
         ),
         4: (
-            "Give a comprehensive analysis, including themes, events, "
-            "details, and significance:"
+            "Give a comprehensive summary. First think of how to break up the chapter into sections (eg. each time the chapter switches POV or location changes). Then summarize each section individually and thoroughly. Be sure to include all important details:"
         ),
     }
 
-    prompt = depth_prompts[depth] + "\n\n" + chapter_text
+    prompt = system_prompt + "\n\n" + depth_prompts[depth] + "\n\n" + chapter_text
 
     try:
         response = model.generate_content(prompt)

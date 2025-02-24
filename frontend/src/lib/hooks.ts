@@ -15,7 +15,9 @@ export function useBookStatus(bookId: string | null) {
         const status = await getBookStatus(bookId!);
         console.log(
           `[useBookStatus] Received status for book ${bookId}:`,
-          status
+          status,
+          "\nChapter statuses:",
+          status.chapters.map((ch) => `${ch.id}: ${ch.status}`)
         );
         return status;
       } catch (error) {
@@ -33,27 +35,36 @@ export function useBookStatus(bookId: string | null) {
       const data = query.state.data;
       if (!data) return 2000;
 
-      const allComplete = data.completedChapters === data.totalChapters;
+      const hasChapters = data.totalChapters > 0;
+      const allComplete =
+        hasChapters && data.completedChapters === data.totalChapters;
       const hasProcessingChapters = data.chapters.some(
-        (ch: { status: string }) => ch.status === "processing"
+        (ch: { status: string }) =>
+          ch.status === "processing" || ch.status === "pending"
       );
 
-      // Stop polling if all chapters are complete and none are being processed
-      if (allComplete && !hasProcessingChapters) {
-        console.log(
-          `[useBookStatus] Stopping polling - all chapters complete and no processing`
-        );
-        return false;
+      // Keep polling if:
+      // 1. We have no chapters yet (initial state)
+      // 2. We have chapters that are still processing/pending
+      // 3. Not all chapters are complete
+      if (!hasChapters || hasProcessingChapters || !allComplete) {
+        return 2000;
       }
 
-      return 2000;
+      console.log(
+        `[useBookStatus] Stopping polling - all chapters complete and no processing`
+      );
+      return false;
     },
     // Stop polling when window is in background
     refetchIntervalInBackground: false,
     select: (data: BookStatus) => {
-      const allComplete = data.completedChapters === data.totalChapters;
+      const hasChapters = data.totalChapters > 0;
+      const allComplete =
+        hasChapters && data.completedChapters === data.totalChapters;
       const hasProcessingChapters = data.chapters.some(
-        (ch: { status: string }) => ch.status === "processing"
+        (ch: { status: string }) =>
+          ch.status === "processing" || ch.status === "pending"
       );
 
       console.log(
@@ -61,6 +72,7 @@ export function useBookStatus(bookId: string | null) {
         {
           completedChapters: data.completedChapters,
           totalChapters: data.totalChapters,
+          hasChapters,
           allComplete,
           hasProcessingChapters,
         }
@@ -68,7 +80,7 @@ export function useBookStatus(bookId: string | null) {
 
       return {
         ...data,
-        shouldStopPolling: allComplete && !hasProcessingChapters,
+        shouldStopPolling: hasChapters && allComplete && !hasProcessingChapters,
       };
     },
   });

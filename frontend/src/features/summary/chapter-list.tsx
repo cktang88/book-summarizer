@@ -115,6 +115,12 @@ export function ChapterList({
         {status.chapters.map((chapter: ChapterStatus) => {
           const isExpanded = expandedChapterIds.has(chapter.id);
 
+          console.log(`[ChapterList] Chapter ${chapter.id} status:`, {
+            title: chapter.title,
+            status: chapter.status,
+            isExpanded,
+          });
+
           return (
             <div
               key={chapter.id}
@@ -137,7 +143,8 @@ export function ChapterList({
                 <div className="flex items-center gap-3">
                   {chapter.status === "error" ? (
                     <StatusBadge status="error" />
-                  ) : chapter.status === "processing" ? (
+                  ) : chapter.status === "processing" ||
+                    chapter.status === "pending" ? (
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   ) : (
                     <div
@@ -150,7 +157,18 @@ export function ChapterList({
                       )}
                     />
                   )}
-                  <span className="font-medium">{chapter.title}</span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "font-medium",
+                        (chapter.status === "pending" ||
+                          chapter.status === "processing") &&
+                          "text-muted-foreground"
+                      )}
+                    >
+                      {chapter.title}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2 ml-11 sm:ml-0">

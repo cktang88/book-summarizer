@@ -9,6 +9,9 @@
 - **HTTP**: TanStack Query (React Query) for data fetching, caching, and polling
   - Simple 2-second polling interval
   - Auto-stop polling when processing complete
+  - Automatic cache invalidation on mutations
+  - Configurable stale time (5 minutes)
+  - Retry failed requests (2 times)
 
 ### Backend
 
@@ -19,6 +22,7 @@
   - **Other**: pandoc for mobi and other formats
 - **LLM**: Gemini flash 2
 - **Storage**: Local filesystem
+- **Processing**: Single-threaded queue with rate limiting
 
 ## Directory Structure
 
@@ -56,15 +60,7 @@ interface API {
       bookId: string;
       title: string;
       formats: ["text", "markdown"];
-      metadata: {
-        chapters: Array<{
-          title: string;
-          sections?: Array<{
-            title: string;
-            level: number;
-          }>;
-        }>;
-      };
+      metadata: BookMetadata;
     };
   };
 
@@ -116,7 +112,7 @@ interface API {
       chapters: Array<{
         id: string;
         title: string;
-        status: "pending" | "processing" | "complete";
+        status: "pending" | "processing" | "complete" | "error";
         error?: string;
       }>;
     };
@@ -128,8 +124,15 @@ interface API {
       id: string;
       title: string;
       content: string | null; // null if not yet processed
-      status: "pending" | "processing" | "complete";
+      status: "pending" | "processing" | "complete" | "error";
       error?: string;
+    };
+  };
+
+  // Retry failed chapter
+  "POST /books/{bookId}/chapters/{chapterId}/retry": {
+    response: {
+      status: "queued";
     };
   };
 }
@@ -156,6 +159,8 @@ interface BookMetadata {
 1. **FileUpload**
 
    - Simple drag-drop zone + filepicker
+   - Upload progress tracking
+   - Error handling with toast notifications
 
 2. **SummaryView**
 
@@ -163,11 +168,13 @@ interface BookMetadata {
    - Simple status badges with loading animation
    - React Query integration for polling (2s interval)
    - Manual retry for failed chapters
+   - Auto-stop polling when complete
 
 3. **ProcessingStatus**
    - Overall progress indicator
    - Per-chapter status badges
-   - Auto-refresh via React Query (stops when complete)
+   - Auto-refresh via React Query
+   - Manual retry support for failed chapters
 
 ### Backend
 
@@ -188,6 +195,7 @@ interface BookMetadata {
    - Configurable rate limiting (default: 1 request/second)
    - Cache checking before API calls
    - Manual retry support for failed chapters
+   - Status tracking per chapter
 
 ## Data Storage
 
@@ -323,6 +331,7 @@ interface ChapterSummary {
    - Process book structure
    - Extract chapters
    - Return immediate response with chapter list
+   - Queue chapters for background processing
 
 2. **Background Processing**
 
@@ -330,9 +339,28 @@ interface ChapterSummary {
    - Process at configured rate (default: 1/second)
    - Check file cache before API calls
    - Support manual retry of failed chapters
+   - Track processing status
 
 3. **Frontend Integration**
    - Display immediate chapter list
    - Poll status endpoint every 2 seconds
    - Show simple status badges with loading animation
    - Stop polling once all chapters complete
+   - Support manual retry of failed chapters
+
+## Error Handling
+
+1. **Backend**
+
+   - Rate limit configuration for API calls
+   - File-based caching to prevent redundant processing
+   - Proper error states for failed chapters
+   - Manual retry support
+   - Comprehensive error logging
+
+2. **Frontend**
+   - Toast notifications for user feedback
+   - Loading states and animations
+   - Error boundaries for component failures
+   - Retry buttons for failed operations
+   - Clear error messages

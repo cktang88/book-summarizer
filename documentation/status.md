@@ -62,7 +62,7 @@
   - [x] Add configurable rate limiting
   - [x] Create chapter status tracking
   - [x] Add manual retry support
-- [ ] Build summary generation service
+- [x] Build summary generation service
   - [x] Create configurable summary depth levels
   - [x] Implement intelligent prompting system
   - [x] Add chapter-by-chapter processing
@@ -113,6 +113,11 @@
   - [x] Add chapter status endpoint
   - [x] Implement per-chapter summary endpoint
   - [x] Implement proper error responses
+- [x] Implement retry functionality
+  - [x] Add retry endpoint
+  - [x] Implement retry queue logic
+  - [x] Add frontend retry UI
+  - [x] Handle retry errors
 
 ### 🧪 Testing & Error Handling
 
@@ -121,10 +126,13 @@
   - [x] Create user-friendly error messages
   - [x] Create offline mode support
   - [x] Implement retry mechanisms
+  - [x] Add toast notifications
 - [x] Add backend validation and error handling
   - [x] Implement input validation
   - [x] Add file processing error recovery
   - [x] Create comprehensive logging
+  - [x] Handle rate limits
+  - [x] Add retry support
 
 ## DONE
 

@@ -24,20 +24,24 @@ The Book Summarizer is an interactive web application that allows users to uploa
 - Summaries are cached locally to prevent redundant API calls
 - Chapters are processed lazily in the background:
   - Chapter list is shown immediately after book upload
-  - Summaries are generated one chapter at a time (rate limited)
+  - Summaries are generated one at a time (configurable rate limit)
   - Frontend polls for completion status
   - Cache is checked before making Gemini API calls
+  - Failed chapters can be manually retried
 
 ### 3. Interactive Summary Interface
 
 - Hierarchical, tree-like structure for viewing summaries
-- Expandable/collapsible sections at multiple levels:
-  - Book level (highest level overview)
-  - Chapter level (chapter summaries)
-  - Section level (detailed section breakdowns)
-  - Paragraph level (most detailed analysis)
+- Expandable/collapsible sections at multiple levels
 - Visual indicators show which sections are expanded/collapsed
-- Loading states for when new summaries are being generated
+- Each chapter shows processing status:
+  - Pending: Waiting to be processed (yellow badge)
+  - Processing: Currently being summarized (blue badge with spinner)
+  - Complete: Summary available (green badge)
+  - Error: Failed to process (red badge with retry button)
+- Background processing occurs at controlled rate (configurable, default: 1/second)
+- Frontend polls until all chapters complete (2-second interval)
+- Toast notifications for important events
 
 ### 4. Storage System
 
@@ -122,10 +126,11 @@ The Book Summarizer is an interactive web application that allows users to uploa
 - PDF processing feedback within 500ms
 - Support 500+ page books
 - Chapter list display < 1 second after upload
-- Individual chapter processing rate limited to 1/second
+- Individual chapter processing rate limited to 1/second (configurable)
 - Smooth animations (60fps)
 - Responsive on mobile devices
 - Graceful degradation without internet
+- Cache invalidation on successful retries
 
 ## Error Handling
 
@@ -133,10 +138,13 @@ The Book Summarizer is an interactive web application that allows users to uploa
   - Invalid file types
   - File size limits
   - Processing failures
-  - API failures
+  - API failures (including rate limits)
   - Network issues
-- Retry mechanisms for failed API calls
-- Cache validation and error recovery
+- Manual retry option for failed chapters
+- Simple file-based cache validation
+- Toast notifications for user feedback
+- Loading states and animations
+- Error boundaries for component failures
 
 ## Future Considerations
 

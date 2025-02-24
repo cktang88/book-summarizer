@@ -63,7 +63,8 @@ export function ChapterList({
   const { data: status, isLoading, error } = useBookStatus(bookId);
   const retryMutation = useRetryChapter(bookId);
 
-  const handleRetry = async (chapterId: string) => {
+  const handleRetry = async (e: React.MouseEvent, chapterId: string) => {
+    e.stopPropagation(); // Prevent card expansion when clicking retry
     try {
       await retryMutation.mutateAsync({ chapterId });
       toast.success("Chapter queued for retry");
@@ -118,13 +119,37 @@ export function ChapterList({
             <div
               key={chapter.id}
               className={cn(
-                "rounded-lg border transition-all",
-                isExpanded ? "bg-muted/50" : ""
+                "rounded-lg border transition-all duration-200",
+                "group relative",
+                isExpanded && "bg-muted/50"
               )}
             >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3">
+              <div
+                onClick={() =>
+                  chapter.status !== "error" && onSelectChapter(chapter.id)
+                }
+                className={cn(
+                  "flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3",
+                  chapter.status !== "error" &&
+                    "cursor-pointer hover:bg-muted/30"
+                )}
+              >
                 <div className="flex items-center gap-3">
-                  <StatusBadge status={chapter.status} />
+                  {chapter.status === "error" ? (
+                    <StatusBadge status="error" />
+                  ) : chapter.status === "processing" ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ) : (
+                    <div
+                      className={cn(
+                        "w-4 h-4 rounded-full border-2 transition-colors duration-200",
+                        "group-hover:border-muted-foreground/50",
+                        isExpanded
+                          ? "bg-muted-foreground/30 border-muted-foreground/50"
+                          : "border-muted-foreground/30"
+                      )}
+                    />
+                  )}
                   <span className="font-medium">{chapter.title}</span>
                 </div>
 
@@ -133,7 +158,7 @@ export function ChapterList({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleRetry(chapter.id)}
+                      onClick={(e) => handleRetry(e, chapter.id)}
                       disabled={retryMutation.isPending}
                       className="w-full sm:w-auto"
                     >
@@ -146,21 +171,14 @@ export function ChapterList({
                       {retryMutation.isPending ? "Retrying..." : "Retry"}
                     </Button>
                   )}
-                  {chapter.status === "complete" && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onSelectChapter(chapter.id)}
-                      className="w-full sm:w-auto"
-                    >
-                      {isExpanded ? "Hide" : "View"}
-                    </Button>
-                  )}
                 </div>
               </div>
 
               {isExpanded && (
-                <div className="border-t p-4">
+                <div
+                  className="border-t p-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <ChapterSummarySection
                     bookId={bookId}
                     chapterId={chapter.id}

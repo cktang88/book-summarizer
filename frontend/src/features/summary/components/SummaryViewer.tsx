@@ -90,7 +90,10 @@ function Section({ bookId, section: initialSection, level }: SectionProps) {
                 "h-8 w-8 p-0",
                 !canDecreaseDepth && "opacity-50 cursor-not-allowed"
               )}
-              onClick={() => canDecreaseDepth && handleDepthChange(false)}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (canDecreaseDepth) handleDepthChange(false);
+              }}
               disabled={!canDecreaseDepth || isLoading}
             >
               <Minus className="h-4 w-4" />
@@ -111,7 +114,10 @@ function Section({ bookId, section: initialSection, level }: SectionProps) {
                 "h-8 w-8 p-0",
                 !canIncreaseDepth && "opacity-50 cursor-not-allowed"
               )}
-              onClick={() => canIncreaseDepth && handleDepthChange(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (canIncreaseDepth) handleDepthChange(true);
+              }}
               disabled={!canIncreaseDepth || isLoading}
             >
               <Plus className="h-4 w-4" />

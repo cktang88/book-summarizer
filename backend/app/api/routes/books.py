@@ -4,7 +4,7 @@ import os
 
 router = APIRouter()
 
-# Initialize book service
+# Initialize book service with the same books directory as queue
 BOOKS_DIR = os.getenv("BOOKS_DIR", "./books")
 book_service = BookService(BOOKS_DIR)
 

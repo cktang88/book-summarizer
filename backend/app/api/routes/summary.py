@@ -6,7 +6,7 @@ from pathlib import Path
 
 router = APIRouter()
 
-# Initialize services
+# Initialize services with the same books directory as queue
 BOOKS_DIR = os.getenv("BOOKS_DIR", "./books")
 book_service = BookService(BOOKS_DIR)
 

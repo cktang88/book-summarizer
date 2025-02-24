@@ -15,6 +15,11 @@ from .services.queue import queue
 # Load environment variables
 load_dotenv()
 
+# Configure books directory
+BOOKS_DIR = os.getenv("BOOKS_DIR", "./books")
+books_dir = Path(BOOKS_DIR)
+books_dir.mkdir(exist_ok=True)
+
 app = FastAPI(title="Book Summarizer API")
 
 # Configure CORS
@@ -27,8 +32,6 @@ app.add_middleware(
 )
 
 # Mount the books directory for serving uploaded files
-books_dir = Path("books")
-books_dir.mkdir(exist_ok=True)
 app.mount("/books", StaticFiles(directory=str(books_dir)), name="books")
 
 # Include routers
@@ -45,6 +48,7 @@ async def process_queue():
         await asyncio.sleep(1)  # Sleep for rate limit
 
 
+# Start background processing on startup
 @app.on_event("startup")
 async def startup_event():
     asyncio.create_task(process_queue())

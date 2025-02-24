@@ -29,7 +29,7 @@ export function useBookStatus(bookId: string | null) {
 
 export function useChapterSummary(
   bookId: string | null,
-  chapterId: string | null
+  chapterId: string | undefined
 ) {
   return useQuery({
     queryKey: ["book", bookId, "chapter", chapterId],

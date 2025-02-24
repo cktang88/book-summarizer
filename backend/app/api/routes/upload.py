@@ -5,7 +5,7 @@ import os
 
 router = APIRouter()
 
-# Initialize document processor
+# Initialize document processor with the same books directory as queue
 BOOKS_DIR = os.getenv("BOOKS_DIR", "./books")
 doc_processor = DocumentProcessor(BOOKS_DIR)
 

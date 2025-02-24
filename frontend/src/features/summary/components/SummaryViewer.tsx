@@ -16,29 +16,17 @@ function Section({ bookId, section: initialSection, level }: SectionProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleExpand = useCallback(async () => {
-    console.log("[Section] Expanding section:", {
-      id: section.id,
-      depth: section.depth,
-      isExpanded: section.isExpanded,
-      title: section.title,
-      currentContent: section.content?.slice(0, 50) + "...",
-    });
-
-    // If we're at max depth (4), just toggle collapse
+    // If we're at max depth (4), do nothing
     if (section.depth >= 4) {
-      console.log("[Section] Max depth reached, toggling collapse");
-      setSection((prev) => ({ ...prev, isExpanded: !prev.isExpanded }));
       return;
     }
 
     if (section.isExpanded) {
-      console.log("[Section] Collapsing section");
       setSection((prev) => ({ ...prev, isExpanded: false }));
       return;
     }
 
     // Set loading state
-    console.log("[Section] Fetching deeper summary");
     setIsLoading(true);
 
     try {
@@ -47,28 +35,21 @@ function Section({ bookId, section: initialSection, level }: SectionProps) {
         section.depth + 1,
         section.id
       );
-      console.log("[Section] Received response:", {
-        id: section.id,
-        newContent: response.text?.slice(0, 50) + "...",
-        numNewSections: response.sections.length,
-        newSections: response.sections.map((s) => s.title),
-      });
 
       // Cache the new summary
-      summaryCache.set(bookId, section.id, section.depth + 1, response.text);
+      summaryCache.set(
+        bookId,
+        section.id,
+        section.depth + 1,
+        response.text || response.content || ""
+      );
 
-      // Update with new content and sections
+      // Update with new content
       setSection((prev) => ({
         ...prev,
         isExpanded: true,
-        content: response.text,
-        sections: response.sections.map((newSection) => ({
-          ...newSection,
-          content: "",
-          depth: section.depth + 1,
-          sections: [],
-          isExpanded: false,
-        })),
+        content: response.text || response.content || "",
+        depth: response.depth,
       }));
     } catch (error) {
       console.error("[Section] Failed to fetch deeper summary:", error);
@@ -109,18 +90,6 @@ function Section({ bookId, section: initialSection, level }: SectionProps) {
           )}
         </div>
       </div>
-      {section.isExpanded && section.sections.length > 0 && (
-        <div className="border-l pl-4">
-          {section.sections.map((subSection) => (
-            <Section
-              key={subSection.id}
-              bookId={bookId}
-              section={subSection}
-              level={level + 1}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

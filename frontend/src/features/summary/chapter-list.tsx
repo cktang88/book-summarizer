@@ -41,15 +41,8 @@ function ChapterSummarySection({ bookId, chapterId }: ChapterSummaryProps) {
       initialSummary={{
         id: chapterSummary.id,
         title: chapterSummary.title,
-        content: chapterSummary.content || "",
+        content: chapterSummary.content || chapterSummary.text || "",
         depth: chapterSummary.depth,
-        sections:
-          chapterSummary.sections?.map((section) => ({
-            ...section,
-            content: "",
-            sections: section.sections || [],
-            isExpanded: false,
-          })) || [],
         isExpanded: false,
       }}
     />

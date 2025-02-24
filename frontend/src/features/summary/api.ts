@@ -19,9 +19,5 @@ export async function fetchSummary(
     throw new Error(`Failed to fetch summary: ${error}`);
   }
 
-  const data = await response.json();
-  return {
-    text: data.text || "",
-    sections: data.sections || [],
-  };
+  return response.json();
 }

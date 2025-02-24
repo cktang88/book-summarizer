@@ -38,20 +38,11 @@ async def get_book_summary(book_id: str, depth: int = 1, section: str | None = N
                     chapter_file, summary_file, depth=depth
                 )
 
-            # Get subsections if depth > 1
-            sections = []
-            if depth < 4:  # Only allow expansion up to depth 4
-                sections = [
-                    {
-                        "id": f"{section}-section-{i}",
-                        "title": f"Section {i}",
-                    }
-                    for i in range(1, 4)  # Example: 3 sections per chapter
-                ]
-
             return {
                 "text": summary_text,
-                "sections": sections,
+                "id": section,
+                "title": f"Chapter {chapter_num}",
+                "depth": depth,
             }
 
         # For initial summary (depth=1), return chapter list with basic summaries
@@ -84,7 +75,6 @@ async def get_book_summary(book_id: str, depth: int = 1, section: str | None = N
                     "title": chapter["title"],
                     "content": summary_text,
                     "depth": depth,
-                    "sections": [],  # Will be populated when expanded
                 }
             )
 

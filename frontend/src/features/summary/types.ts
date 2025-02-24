@@ -3,17 +3,16 @@ export interface SummarySection {
   title: string;
   content: string;
   depth: number;
-  sections: SummarySection[];
   isLoading?: boolean;
   isExpanded?: boolean;
 }
 
 export interface SummaryResponse {
-  text: string;
-  sections: Array<{
-    id: string;
-    title: string;
-  }>;
+  id: string;
+  title: string;
+  text?: string;
+  content?: string;
+  depth: number;
 }
 
 export interface SummaryCacheEntry {

@@ -6,7 +6,9 @@
 
 - **Framework**: React + TypeScript + Vite
 - **Styling**: Tailwind + Shadcn/ui
-- **HTTP**: native http fetch
+- **HTTP**: TanStack Query (React Query) for data fetching, caching, and polling
+  - Simple 2-second polling interval
+  - Auto-stop polling when processing complete
 
 ### Backend
 
@@ -105,6 +107,31 @@ interface API {
       }>;
     };
   };
+
+  // Get chapter processing status
+  "GET /books/{bookId}/status": {
+    response: {
+      totalChapters: number;
+      completedChapters: number;
+      chapters: Array<{
+        id: string;
+        title: string;
+        status: "pending" | "processing" | "complete";
+        error?: string;
+      }>;
+    };
+  };
+
+  // Get specific chapter summary
+  "GET /books/{bookId}/chapters/{chapterId}/summary": {
+    response: {
+      id: string;
+      title: string;
+      content: string | null; // null if not yet processed
+      status: "pending" | "processing" | "complete";
+      error?: string;
+    };
+  };
 }
 
 interface BookMetadata {
@@ -131,8 +158,16 @@ interface BookMetadata {
    - Simple drag-drop zone + filepicker
 
 2. **SummaryView**
+
    - Expandable tree view
-   - Loading states
+   - Simple status badges with loading animation
+   - React Query integration for polling (2s interval)
+   - Manual retry for failed chapters
+
+3. **ProcessingStatus**
+   - Overall progress indicator
+   - Per-chapter status badges
+   - Auto-refresh via React Query (stops when complete)
 
 ### Backend
 
@@ -142,9 +177,17 @@ interface BookMetadata {
    - Basic chapter detection
 
 2. **Summarizer**
-   - Gemini API calls
+
+   - Gemini API calls with configurable rate limiting
    - Text chunking
-   - Cache results to disk
+   - Simple file-based cache
+   - Background processing queue
+
+3. **ProcessingQueue**
+   - Single-threaded chapter processing
+   - Configurable rate limiting (default: 1 request/second)
+   - Cache checking before API calls
+   - Manual retry support for failed chapters
 
 ## Data Storage
 
@@ -247,28 +290,49 @@ interface BookStorage {
       ...
 ```
 
+### Processing Status
+
+```typescript
+interface ProcessingStatus {
+  bookId: string;
+  totalChapters: number;
+  completedChapters: number;
+  chapters: Array<{
+    id: string;
+    title: string;
+    status: "pending" | "processing" | "complete";
+    error?: string;
+    startedAt?: string;
+    completedAt?: string;
+  }>;
+}
+
+interface ChapterSummary {
+  id: string;
+  title: string;
+  content: string | null;
+  status: "pending" | "processing" | "complete";
+  error?: string;
+}
+```
+
 ## Processing Pipeline
 
-1. **Document Upload**
+1. **Book Upload**
 
-   - Validate file type and size
-   - Extract text based on format:
-     - PDF: PyPDF2 text extraction
-     - EPUB: Native chapter structure
-     - MOBI: Convert to EPUB then process
-   - Detect chapters and sections
-   - Generate both text and markdown versions
-   - Store metadata and content
+   - Process book structure
+   - Extract chapters
+   - Return immediate response with chapter list
 
-2. **Summary Generation**
+2. **Background Processing**
 
-   - Chunk text into manageable sections
-   - Use Gemini flash 2 for summarization
-   - Cache results at each depth level
-   - Support incremental loading of deeper summaries
+   - Queue chapters for processing
+   - Process at configured rate (default: 1/second)
+   - Check file cache before API calls
+   - Support manual retry of failed chapters
 
-3. **Error Handling**
-   - Graceful fallbacks for text extraction
-   - Retry logic for API calls
-   - Proper HTTP status codes
-   - Detailed error messages
+3. **Frontend Integration**
+   - Display immediate chapter list
+   - Poll status endpoint every 2 seconds
+   - Show simple status badges with loading animation
+   - Stop polling once all chapters complete

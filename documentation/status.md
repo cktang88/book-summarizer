@@ -57,13 +57,20 @@
   - [x] Create robust error handling and retry mechanism
   - [x] Add depth-based summary configuration (1-4 levels)
   - [x] Implement CLI interface for testing
-- [x] Build summary generation service
+- [x] Build lazy chapter processing system
+  - [x] Implement background processing queue
+  - [x] Add configurable rate limiting
+  - [x] Create chapter status tracking
+  - [x] Add manual retry support
+- [ ] Build summary generation service
   - [x] Create configurable summary depth levels
   - [x] Implement intelligent prompting system
+  - [x] Add chapter-by-chapter processing
+  - [x] Implement file-based caching
 - [x] Implement caching system
   - [x] Set up cache directory structure
-  - [x] Add cache validation and versioning
-  - [x] Implement cache invalidation strategy
+  - [x] Add cache validation
+  - [x] Implement simple file storage
 
 ### 🎨 Frontend Components
 
@@ -72,6 +79,11 @@
   - [x] Create loading spinners and progress indicators
   - [x] Add accessibility features (ARIA labels, keyboard nav)
   - [x] Implement expand/collapse animations
+- [x] Implement React Query integration
+  - [x] Set up React Query provider and config
+  - [x] Create polling hook (2s interval)
+  - [x] Add auto-stop when processing complete
+  - [x] Implement error handling with retry
 - [x] Build file upload interface
   - [x] Create drag-and-drop component
   - [x] Add file picker alternative
@@ -81,6 +93,8 @@
   - [x] Create expandable tree-like structure
   - [x] Implement HackerNews-style threading
   - [x] Add smooth expand/collapse animations
+  - [x] Add simple status badges with animation
+  - [x] Add manual retry for failed chapters
   - [x] Create loading state placeholders
 - [x] Implement responsive layout
   - [x] Create mobile-first design
@@ -96,7 +110,8 @@
   - [x] Add summary retrieval logic
 - [x] Build backend API endpoints
   - [x] Create file upload endpoint
-  - [x] Implement summary retrieval endpoints
+  - [x] Add chapter status endpoint
+  - [x] Implement per-chapter summary endpoint
   - [x] Implement proper error responses
 
 ### 🧪 Testing & Error Handling

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, HTTPException, File
 from ...processor import DocumentProcessor
+from ...services.queue import queue
 import os
 
 router = APIRouter()
@@ -17,6 +18,9 @@ async def upload_file(file: UploadFile = File(...)):
 
         # Process the document
         result = await doc_processor.process_document(file)
+
+        # Queue chapters for processing
+        queue.add_book(result.book_id, result.metadata["chapters"])
 
         return {
             "bookId": result.book_id,

@@ -9,6 +9,7 @@ import { uploadFile } from "@/features/upload/api/upload-service";
 import { SummaryPage } from "@/features/summary/pages/SummaryPage";
 import { BookList } from "@/features/books/components/BookList";
 import { useBooks } from "@/features/books/hooks/useBooks";
+import { Toaster } from "sonner";
 
 function App() {
   const [isUploading, setIsUploading] = useState(false);
@@ -59,6 +60,7 @@ function App() {
             </div>
           </main>
         </Providers>
+        <Toaster />
       </ThemeProvider>
     );
   }
@@ -113,6 +115,7 @@ function App() {
           )}
         </main>
       </Providers>
+      <Toaster />
     </ThemeProvider>
   );
 }

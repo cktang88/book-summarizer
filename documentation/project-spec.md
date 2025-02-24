@@ -22,6 +22,11 @@ The Book Summarizer is an interactive web application that allows users to uploa
 - Each chapter gets its own summary
 - Summaries are generated using Google's Gemini flash 2 LLM
 - Summaries are cached locally to prevent redundant API calls
+- Chapters are processed lazily in the background:
+  - Chapter list is shown immediately after book upload
+  - Summaries are generated one chapter at a time (rate limited)
+  - Frontend polls for completion status
+  - Cache is checked before making Gemini API calls
 
 ### 3. Interactive Summary Interface
 
@@ -72,9 +77,13 @@ The Book Summarizer is an interactive web application that allows users to uploa
 3. **Summary View**
 
    - Initial book summary is displayed
-   - Chapter list is shown with collapse/expand options
-   - User can click to expand any section
-   - Loading indicators show when new summaries are being generated
+   - Complete chapter list is shown immediately
+   - Each chapter shows processing status:
+     a. Pending: Waiting to be processed
+     b. Processing: Currently being summarized
+     c. Complete: Summary available
+   - Background processing occurs at controlled rate (1 chapter/second)
+   - Frontend polls for updates until all chapters complete
 
 4. **Detail Exploration**
    - User clicks expand on any section
@@ -111,8 +120,9 @@ The Book Summarizer is an interactive web application that allows users to uploa
 
 - Initial page load < 2 seconds
 - PDF processing feedback within 500ms
-- support 500+ page books
-- Summary generation complete with LLM within 10 second
+- Support 500+ page books
+- Chapter list display < 1 second after upload
+- Individual chapter processing rate limited to 1/second
 - Smooth animations (60fps)
 - Responsive on mobile devices
 - Graceful degradation without internet

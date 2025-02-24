@@ -153,4 +153,7 @@ The Book Summarizer is an interactive web application that allows users to uploa
 - Additional file format support
 - Custom default summary depth settings
 - Export functionality
-- support nonfiction books, which have different summarization prompts
+
+- support NONFICTION books, which have different summarization prompts
+- better UI
+- add book chat for getting more detail about characters/etc

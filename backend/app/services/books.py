@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List
 from datetime import datetime
 import os
+import shutil
 
 
 class BookService:
@@ -64,3 +65,14 @@ class BookService:
             "uploadedAt": upload_time.isoformat(),
             "metadata": metadata,
         }
+
+    def delete_book(self, book_id: str) -> None:
+        """Delete a book and all its associated files"""
+        book_dir = self.books_dir / book_id
+        if not book_dir.exists():
+            raise FileNotFoundError(f"Book not found: {book_id}")
+
+        try:
+            shutil.rmtree(book_dir)
+        except Exception as e:
+            raise Exception(f"Failed to delete book: {str(e)}")

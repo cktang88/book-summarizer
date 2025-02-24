@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Book, fetchBooks } from "../api/books-service";
+import { Book, fetchBooks, deleteBook } from "../api/books-service";
 
 export function useBooks() {
   const [books, setBooks] = useState<Book[]>([]);
@@ -27,11 +27,21 @@ export function useBooks() {
     setBooks((prev) => [book, ...prev]);
   };
 
+  const removeBook = async (bookId: string) => {
+    try {
+      await deleteBook(bookId);
+      setBooks((prev) => prev.filter((book) => book.id !== bookId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete book");
+    }
+  };
+
   return {
     books,
     isLoading,
     error,
     refresh: loadBooks,
     addBook,
+    removeBook,
   };
 }

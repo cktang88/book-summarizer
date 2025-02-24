@@ -15,7 +15,7 @@ function App() {
   const [isUploading, setIsUploading] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
-  const { books, isLoading, error, addBook } = useBooks();
+  const { books, isLoading, error, addBook, removeBook } = useBooks();
 
   const handleFileSelect = async (file: File) => {
     try {
@@ -113,7 +113,11 @@ function App() {
                   <p>{error}</p>
                 </div>
               ) : (
-                <BookList books={books} onSelectBook={handleSelectBook} />
+                <BookList
+                  books={books}
+                  onSelectBook={handleSelectBook}
+                  onDeleteBook={removeBook}
+                />
               )}
             </div>
           )}

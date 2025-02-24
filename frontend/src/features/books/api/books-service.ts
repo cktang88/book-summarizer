@@ -30,3 +30,15 @@ export async function fetchBook(bookId: string): Promise<Book> {
   console.log(`[fetchBook] Received book details:`, data);
   return data;
 }
+
+export async function deleteBook(bookId: string): Promise<void> {
+  const response = await fetch(`${API_URL}/api/books/${bookId}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const error = `Failed to delete book: ${response.statusText}`;
+    console.error(`[deleteBook] ${error}`);
+    throw new Error(error);
+  }
+}

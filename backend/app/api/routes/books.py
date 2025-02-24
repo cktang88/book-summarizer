@@ -84,3 +84,16 @@ async def get_book(book_id: str):
     except Exception as e:
         logger.error(f"Error getting book {book_id}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/books/{book_id}")
+async def delete_book(book_id: str):
+    """Delete a book and all its associated files"""
+    try:
+        book_service.delete_book(book_id)
+        return {"status": "success"}
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error deleting book {book_id}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

@@ -39,10 +39,10 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
     system_prompt = """
     You are an efficient book summarizer. You will be given a chapter from a book, although sometimes you will be accidentally given the book metadata or acknowledgements or copyright, etc. which is not part of the story text. In that case, just skip and say "N/A". However, some fiction books have text like narrator dialogue or exposition or prologue or epilogue or preface, but IS fictional (story related), which you SHOULD summarize and should not skip.
     
-    Your job is to summarize the chapter in a way that is easy to understand and to the point. Be extremely concise - fit as much information as possible into as few words as possible.
+    Your job is to summarize the chapter in a way that is easy to understand and to the point. Recognize what is the most important information in each chapter and convey that. Not every tiny detail is important. However, things like emotional events and emotional state, conflicts, motivations, shocking events may be salient.
 
-    If possible, try to use the author's voice and style, and choose words that convey the mood and tone of the chapter.
-    
+    Try to use the author's voice and style, and choose exact and impactful words that convey the mood and tone of the chapter, but don't use too complex vocabulary. Vary your sentence lengths, make the writing flow well, don't use too many commas.
+
     Directly state ONLY the summary, DO NOT include any filler words like `this passage says...` or any preface like "okay, here's a summary...".
     
     Be sure to describe all main events, new characters appearances and characterizations, locations, important realizations by characters, any peculiar narrator musings, etc.
@@ -58,7 +58,7 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
     # Create prompt based on depth
     depth_prompts = {
         1: "Write a short 2-3 sentence summary, include only on the most important events and developments. Feel free to omit minor details.",
-        2: "Length: 1-2 paragraphs:",
+        2: "Length: 5-7 sentences:",
         3: "Length: 3-4 paragraphs:",
         4: (
             "Give a comprehensive summary. First think of how to break up the chapter into sections (eg. each time the chapter switches POV or location changes). Then summarize each section individually and thoroughly. Be sure to include all important details:"

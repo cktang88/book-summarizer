@@ -3,6 +3,7 @@ import {
   useRetryChapter,
   useChapterSummary,
   useNonChapters,
+  useDeleteChapterSummaries,
 } from "@/lib/hooks";
 import { ChapterStatus } from "@/lib/api";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -11,7 +12,7 @@ import { ReloadIcon } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { SummaryViewer } from "./components/SummaryViewer";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 
 interface ChapterSummaryProps {
   bookId: string;
@@ -68,6 +69,7 @@ export function ChapterList({
   const { data: status, isLoading, error } = useBookStatus(bookId);
   const { data: nonChaptersData } = useNonChapters(bookId);
   const retryMutation = useRetryChapter(bookId);
+  const deleteMutation = useDeleteChapterSummaries(bookId);
 
   const handleRetry = async (e: React.MouseEvent, chapterId: string) => {
     e.stopPropagation(); // Prevent card expansion when clicking retry
@@ -77,6 +79,20 @@ export function ChapterList({
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to retry chapter";
+      toast.error(message);
+    }
+  };
+
+  const handleReSummarize = async (e: React.MouseEvent, chapterId: string) => {
+    e.stopPropagation(); // Prevent card expansion when clicking re-summarize
+    try {
+      // Collapse the chapter section before deleting summaries
+      onSelectChapter(chapterId);
+      await deleteMutation.mutateAsync({ chapterId });
+      toast.success("Chapter queued for re-summarization");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to re-summarize chapter";
       toast.error(message);
     }
   };
@@ -192,7 +208,7 @@ export function ChapterList({
                   </div>
 
                   <div className="flex items-center gap-2 ml-11 sm:ml-0">
-                    {chapter.status === "error" && (
+                    {chapter.status === "error" ? (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -208,6 +224,26 @@ export function ChapterList({
                         />
                         {retryMutation.isPending ? "Retrying..." : "Retry"}
                       </Button>
+                    ) : (
+                      chapter.status === "complete" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handleReSummarize(e, chapter.id)}
+                          disabled={deleteMutation.isPending}
+                          className="w-full sm:w-auto"
+                        >
+                          <RefreshCw
+                            className={cn(
+                              "mr-1 h-3 w-3",
+                              deleteMutation.isPending && "animate-spin"
+                            )}
+                          />
+                          {deleteMutation.isPending
+                            ? "Re-summarizing..."
+                            : "Re-summarize"}
+                        </Button>
+                      )
                     )}
                   </div>
                 </div>

@@ -161,3 +161,19 @@ export async function getNonChapters(
 
   return response.json();
 }
+
+export async function deleteChapterSummaries(
+  bookId: string,
+  chapterId: string
+): Promise<{ status: string; message: string }> {
+  const response = await fetch(
+    `${API_URL}/api/books/${bookId}/chapters/${chapterId}/summary`,
+    { method: "DELETE" }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete summaries: ${response.statusText}`);
+  }
+
+  return response.json();
+}

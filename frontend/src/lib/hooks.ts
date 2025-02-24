@@ -10,6 +10,7 @@ import {
   BookStatus,
   fetchSummary,
   getNonChapters,
+  deleteChapterSummaries,
 } from "./api";
 
 export function useBookStatus(bookId: string | null) {
@@ -162,5 +163,24 @@ export function useNonChapters(bookId: string | null) {
     },
     // Cache for 24 hours once we stop polling
     staleTime: 24 * 60 * 60 * 1000,
+  });
+}
+
+export function useDeleteChapterSummaries(bookId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ chapterId }: { chapterId: string }) =>
+      deleteChapterSummaries(bookId, chapterId),
+    onSuccess: (_, { chapterId }) => {
+      // Invalidate queries for this specific chapter's summaries
+      queryClient.invalidateQueries({
+        queryKey: ["book", bookId, "chapter", chapterId],
+      });
+      // Also invalidate the chapter's status in the book status
+      queryClient.invalidateQueries({
+        queryKey: ["book", bookId, "status"],
+      });
+    },
   });
 }

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from ...services.books import BookService
 from ...summarizer import summarize_chapter_file
+from ...services.queue import ChapterTask, queue
 import os
 from pathlib import Path
 
@@ -107,6 +108,52 @@ async def get_non_chapters(book_id: str):
         ]
 
         return {"non_chapters": non_chapters}
+
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/books/{book_id}/chapters/{chapter_id}/summary")
+async def delete_chapter_summaries(book_id: str, chapter_id: str):
+    """Delete all summaries for a specific chapter"""
+    try:
+        # Get book details to verify it exists
+        book_service.get_book(book_id)
+        book_dir = Path(BOOKS_DIR) / book_id
+        summaries_dir = book_dir / "summaries"
+
+        # Extract chapter number from chapter_id
+        chapter_num = int(chapter_id.split("-")[1])
+
+        # Delete all depth summaries for this chapter
+        deleted_files = []
+        for depth in range(1, 5):  # Depths 1-4
+            summary_file = summaries_dir / f"chapter-{chapter_num}-depth-{depth}.txt"
+            if summary_file.exists():
+                summary_file.unlink()
+                deleted_files.append(str(summary_file))
+
+        # Update the chapter status in the queue to pending
+        if book_id in queue.processing:
+            if chapter_id in queue.processing[book_id]:
+                queue.processing[book_id][chapter_id]["status"] = "pending"
+
+        # Add chapter back to the queue for reprocessing
+        queue.queue.append(
+            ChapterTask(
+                book_id=book_id,
+                chapter_id=chapter_id,
+                chapter_title=f"Chapter {chapter_num}",
+            )
+        )
+
+        return {
+            "status": "success",
+            "message": f"Deleted {len(deleted_files)} summary files",
+            "deleted_files": deleted_files,
+        }
 
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))

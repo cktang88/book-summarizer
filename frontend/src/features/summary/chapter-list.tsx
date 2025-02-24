@@ -16,7 +16,8 @@ interface ChapterSummaryProps {
 function ChapterSummarySection({ bookId, chapterId }: ChapterSummaryProps) {
   const { data: chapterSummary, isLoading } = useChapterSummary(
     bookId,
-    chapterId
+    chapterId,
+    1
   );
 
   if (isLoading) {
@@ -41,17 +42,14 @@ function ChapterSummarySection({ bookId, chapterId }: ChapterSummaryProps) {
         id: chapterSummary.id,
         title: chapterSummary.title,
         content: chapterSummary.content || "",
-        depth: 1,
-        sections: [
-          {
-            id: `${chapterSummary.id}-section-1`,
-            title: "Detailed Summary",
+        depth: chapterSummary.depth,
+        sections:
+          chapterSummary.sections?.map((section) => ({
+            ...section,
             content: "",
-            depth: 2,
-            sections: [],
+            sections: section.sections || [],
             isExpanded: false,
-          },
-        ],
+          })) || [],
         isExpanded: false,
       }}
     />

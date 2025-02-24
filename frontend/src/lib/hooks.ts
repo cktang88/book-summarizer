@@ -24,11 +24,12 @@ export function useBookStatus(bookId: string | null) {
 
 export function useChapterSummary(
   bookId: string | null,
-  chapterId: string | undefined
+  chapterId: string | undefined,
+  depth: number = 1
 ) {
   return useQuery({
-    queryKey: ["book", bookId, "chapter", chapterId],
-    queryFn: () => fetchSummary(bookId!, 1, chapterId),
+    queryKey: ["book", bookId, "chapter", chapterId, depth],
+    queryFn: () => fetchSummary(bookId!, depth, chapterId),
     // Only run query if we have both IDs
     enabled: !!bookId && !!chapterId,
     // Don't refetch on window focus since content won't change
@@ -37,6 +38,13 @@ export function useChapterSummary(
       id: chapterId!,
       title: `Chapter ${chapterId!.split("-")[1]}`,
       content: data.text,
+      sections: data.sections.map((section) => ({
+        ...section,
+        content: "",
+        sections: [],
+        isExpanded: false,
+      })),
+      depth: data.depth || depth,
       status: "complete" as const,
     }),
   });

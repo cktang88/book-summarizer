@@ -46,9 +46,16 @@ export interface ChapterSummary {
 
 export interface SummaryResponse {
   text: string;
+  depth: number;
   sections: Array<{
     id: string;
     title: string;
+    depth: number;
+    sections?: Array<{
+      id: string;
+      title: string;
+      depth: number;
+    }>;
   }>;
 }
 
@@ -132,6 +139,7 @@ export async function fetchSummary(
   const data = await response.json();
   return {
     text: data.text || "",
+    depth: data.depth || 0,
     sections: data.sections || [],
   };
 }

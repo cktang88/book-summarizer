@@ -1,5 +1,7 @@
 import { ChapterList } from "../chapter-list";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchBook } from "@/features/books/api/books-service";
 
 interface SummaryPageProps {
   bookId: string;
@@ -9,6 +11,14 @@ export function SummaryPage({ bookId }: SummaryPageProps) {
   const [expandedChapterIds, setExpandedChapterIds] = useState<Set<string>>(
     new Set()
   );
+
+  // Fetch book details to initialize queue
+  useQuery({
+    queryKey: ["book", bookId],
+    queryFn: () => fetchBook(bookId),
+    // Only fetch once when book is selected
+    staleTime: Infinity,
+  });
 
   const handleToggleChapter = (chapterId: string) => {
     setExpandedChapterIds((prev) => {

@@ -17,11 +17,16 @@ export async function fetchBooks(): Promise<Book[]> {
 }
 
 export async function fetchBook(bookId: string): Promise<Book> {
+  console.log(`[fetchBook] Fetching details for book ${bookId}`);
   const response = await fetch(`${API_URL}/api/books/${bookId}`);
 
   if (!response.ok) {
-    throw new Error("Failed to fetch book");
+    const error = `Failed to fetch book: ${response.statusText}`;
+    console.error(`[fetchBook] ${error}`);
+    throw new Error(error);
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log(`[fetchBook] Received book details:`, data);
+  return data;
 }

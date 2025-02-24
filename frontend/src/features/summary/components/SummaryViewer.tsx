@@ -74,7 +74,15 @@ function Section({ bookId, section: initialSection, level }: SectionProps) {
         <div className="flex-1 prose prose-sm dark:prose-invert max-w-none">
           <h3 className="text-base font-medium mb-3">{section.title}</h3>
           {hasContent && (
-            <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+            <div
+              className="text-muted-foreground leading-relaxed whitespace-pre-wrap select-text"
+              onMouseDown={(e) => {
+                // Allow text selection by preventing parent click handlers
+                if (window.getSelection()?.toString()) {
+                  e.stopPropagation();
+                }
+              }}
+            >
               {section.content}
             </div>
           )}

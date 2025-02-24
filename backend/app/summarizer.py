@@ -41,13 +41,15 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
 
     If possible, try to use the author's voice and style, and choose words that convey the mood and tone of the chapter.
     
-    Directly describe what happens, skip any filler words like `this passage says...` or anything like that. 
+    Directly state ONLY the summary, DO NOT include any filler words like `this passage says...` or any preface like "okay, here's a summary...".
     
     Be sure to describe all main events, new characters appearances and characterizations, locations, important realizations by characters, any peculiar narrator musings, etc.
 
     If any important character motivations or internal or external conflicts are revealed, describe them.
 
     Note POV shifts, time jumps, backstory narration, or format changes (letters, poems, etc.).
+
+    You must adhere to output length limits:
 
     """
 

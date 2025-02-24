@@ -89,7 +89,8 @@ export function useChapterSummary(
     select: (data) => ({
       id: chapterId!,
       title: `Chapter ${chapterId!.split("-")[1]}`,
-      content: data.text,
+      content: data.text || data.content,
+      text: data.text || data.content,
       sections: data.sections.map((section) => ({
         ...section,
         content: "",

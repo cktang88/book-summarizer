@@ -22,7 +22,7 @@ function ChapterSummarySection({ bookId, chapterId }: ChapterSummaryProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-4">
+      <div className="flex items-center justify-center py-6">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="h-6 w-6 animate-spin" />
           <p className="text-sm text-muted-foreground">Loading summary...</p>
@@ -75,12 +75,19 @@ export function ChapterList({
   };
 
   if (isLoading) {
-    return <div className="animate-pulse">Loading chapters...</div>;
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading chapters...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="text-red-500">
+      <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-destructive">
         Error loading chapters: {error.message}
       </div>
     );
@@ -91,9 +98,9 @@ export function ChapterList({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <h2 className="text-xl font-semibold">
           Chapters ({status.completedChapters}/{status.totalChapters})
         </h2>
         <div className="text-sm text-muted-foreground">
@@ -103,7 +110,7 @@ export function ChapterList({
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-4">
         {status.chapters.map((chapter: ChapterStatus) => {
           const isExpanded = expandedChapterIds.has(chapter.id);
 
@@ -112,22 +119,23 @@ export function ChapterList({
               key={chapter.id}
               className={cn(
                 "rounded-lg border transition-all",
-                isExpanded ? "bg-muted" : ""
+                isExpanded ? "bg-muted/50" : ""
               )}
             >
-              <div className="flex items-center justify-between p-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3">
                 <div className="flex items-center gap-3">
                   <StatusBadge status={chapter.status} />
-                  <span>{chapter.title}</span>
+                  <span className="font-medium">{chapter.title}</span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 ml-11 sm:ml-0">
                   {chapter.status === "error" && (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleRetry(chapter.id)}
                       disabled={retryMutation.isPending}
+                      className="w-full sm:w-auto"
                     >
                       <ReloadIcon
                         className={cn(
@@ -143,6 +151,7 @@ export function ChapterList({
                       variant="ghost"
                       size="sm"
                       onClick={() => onSelectChapter(chapter.id)}
+                      className="w-full sm:w-auto"
                     >
                       {isExpanded ? "Hide" : "View"}
                     </Button>

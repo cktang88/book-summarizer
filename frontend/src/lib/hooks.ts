@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  Query,
+} from "@tanstack/react-query";
 import { getBookStatus, retryChapter, BookStatus, fetchSummary } from "./api";
 
 export function useBookStatus(bookId: string | null) {
@@ -24,24 +29,47 @@ export function useBookStatus(bookId: string | null) {
     // Only run query if we have a bookId
     enabled: !!bookId,
     // Poll every 2 seconds
-    refetchInterval: 2000,
-    // Stop polling when all chapters are complete
+    refetchInterval: (query: Query<BookStatus, Error>) => {
+      const data = query.state.data;
+      if (!data) return 2000;
+
+      const allComplete = data.completedChapters === data.totalChapters;
+      const hasProcessingChapters = data.chapters.some(
+        (ch: { status: string }) => ch.status === "processing"
+      );
+
+      // Stop polling if all chapters are complete and none are being processed
+      if (allComplete && !hasProcessingChapters) {
+        console.log(
+          `[useBookStatus] Stopping polling - all chapters complete and no processing`
+        );
+        return false;
+      }
+
+      return 2000;
+    },
+    // Stop polling when window is in background
     refetchIntervalInBackground: false,
     select: (data: BookStatus) => {
       const allComplete = data.completedChapters === data.totalChapters;
+      const hasProcessingChapters = data.chapters.some(
+        (ch: { status: string }) => ch.status === "processing"
+      );
+
       console.log(
         `[useBookStatus] Processing status data for book ${bookId}:`,
         {
           completedChapters: data.completedChapters,
           totalChapters: data.totalChapters,
           allComplete,
+          hasProcessingChapters,
         }
       );
-      // If all complete, return data but stop polling
-      if (allComplete) {
-        return { ...data, shouldStopPolling: true };
-      }
-      return { ...data, shouldStopPolling: false };
+
+      return {
+        ...data,
+        shouldStopPolling: allComplete && !hasProcessingChapters,
+      };
     },
   });
 }

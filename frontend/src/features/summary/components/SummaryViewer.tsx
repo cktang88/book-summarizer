@@ -82,6 +82,7 @@ export function SummaryViewer({ bookId, initialSummary }: SummaryViewerProps) {
                     content: "",
                     depth: section.depth + 1,
                     sections: [],
+                    isExpanded: false,
                   })),
                 }
               : s
@@ -101,32 +102,41 @@ export function SummaryViewer({ bookId, initialSummary }: SummaryViewerProps) {
   );
 
   const renderSection = (section: SummarySection, level: number = 0) => {
+    const hasContent = section.content?.trim().length > 0;
+    const hasSections = section.sections.length > 0;
+
     return (
       <div
         key={section.id}
         className={cn("space-y-2", level > 0 && "ml-6 mt-2")}
       >
         <div className="flex items-start gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0 hover:bg-accent"
-            onClick={() => handleExpand(section)}
-          >
-            {section.isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : section.isExpanded ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </Button>
+          {hasSections && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-accent"
+              onClick={() => handleExpand(section)}
+            >
+              {section.isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : section.isExpanded ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </Button>
+          )}
           <div className="flex-1">
-            <h3 className="font-medium">{section.title}</h3>
-            <p className="text-sm text-muted-foreground">{section.content}</p>
+            {level > 0 && <h3 className="font-medium">{section.title}</h3>}
+            {hasContent && (
+              <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">
+                {section.content}
+              </p>
+            )}
           </div>
         </div>
-        {section.isExpanded && section.sections.length > 0 && (
+        {section.isExpanded && hasSections && (
           <div className="border-l pl-4">
             {section.sections.map((subSection) =>
               renderSection(subSection, level + 1)
@@ -137,12 +147,5 @@ export function SummaryViewer({ bookId, initialSummary }: SummaryViewerProps) {
     );
   };
 
-  return (
-    <div className="space-y-4 p-4">
-      <h2 className="text-2xl font-bold mb-4">Book Summary</h2>
-      <div className="space-y-4">
-        {summary.sections.map((section) => renderSection(section))}
-      </div>
-    </div>
-  );
+  return <div className="space-y-4">{renderSection(summary)}</div>;
 }

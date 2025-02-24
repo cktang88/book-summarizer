@@ -3,6 +3,7 @@ from typing import Dict, List
 import time
 import os
 import logging
+import random
 from pathlib import Path
 from ..summarizer import summarize_chapter_file
 
@@ -38,6 +39,10 @@ class ProcessingQueue:
         self.queue: List[ChapterTask] = []
         # Store both status and title for each chapter
         self.processing: Dict[str, Dict[str, dict]] = {}
+        # Rate limit handling
+        self.is_rate_limited = False
+        self.rate_limit_backoff = 1.0  # Initial backoff in seconds
+        self.max_backoff = 64.0  # Maximum backoff in seconds
         logger.info(f"Initialized ProcessingQueue with books_dir={books_dir}")
 
     def add_book(self, book_id: str, chapters: List[dict]) -> None:
@@ -100,11 +105,22 @@ class ProcessingQueue:
     def process_next(self) -> None:
         """Process the next chapter in queue, respecting rate limit"""
         if not self.queue:
+            # Reset rate limit state when queue is empty
+            self.is_rate_limited = False
+            self.rate_limit_backoff = 1.0
             return
 
-        # Check rate limit
+        # Check if we're rate limited
+        if self.is_rate_limited:
+            now = time.time()
+            if now - self.last_process_time < self.rate_limit_backoff:
+                return
+            # Add jitter to prevent thundering herd
+            time.sleep(random.uniform(0, 1))
+
+        # Check normal rate limit
         now = time.time()
-        if now - self.last_process_time < self.rate_limit:
+        if not self.is_rate_limited and now - self.last_process_time < self.rate_limit:
             return
 
         # Get next task
@@ -135,6 +151,9 @@ class ProcessingQueue:
             if summary_file.exists():
                 self.processing[book_id][chapter_id]["status"] = "complete"
                 logger.info(f"Chapter {chapter_id} already summarized, using cache")
+                # Reset rate limit state on success
+                self.is_rate_limited = False
+                self.rate_limit_backoff = 1.0
                 return
 
             # Generate summary
@@ -145,13 +164,35 @@ class ProcessingQueue:
             self.processing[book_id][chapter_id]["status"] = "complete"
             logger.info("Successfully completed chapter {} summary".format(chapter_id))
 
+            # Reset rate limit state on success
+            self.is_rate_limited = False
+            self.rate_limit_backoff = 1.0
+
         except Exception as e:
-            # Mark as error
-            self.processing[book_id][chapter_id]["status"] = "error"
-            logger.error(
-                "Error processing chapter {}: {}".format(chapter_id, str(e)),
-                exc_info=True,
-            )
+            error_message = str(e).lower()
+
+            # Check if it's a rate limit error
+            if "rate limit" in error_message or "quota" in error_message:
+                logger.warning(
+                    f"Rate limit hit, backing off for {self.rate_limit_backoff} seconds"
+                )
+                # Mark as pending to retry later
+                self.processing[book_id][chapter_id]["status"] = "pending"
+                # Put the task back at the start of the queue
+                self.queue.insert(0, task)
+                # Set rate limited state
+                self.is_rate_limited = True
+                # Increase backoff exponentially
+                self.rate_limit_backoff = min(
+                    self.rate_limit_backoff * 2, self.max_backoff
+                )
+            else:
+                # For non-rate-limit errors, mark as error
+                self.processing[book_id][chapter_id]["status"] = "error"
+                logger.error(
+                    "Error processing chapter {}: {}".format(chapter_id, str(e)),
+                    exc_info=True,
+                )
 
         finally:
             self.last_process_time = time.time()

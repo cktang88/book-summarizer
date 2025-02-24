@@ -1,10 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getBookStatus,
-  getChapterSummary,
-  retryChapter,
-  BookStatus,
-} from "./api";
+import { getBookStatus, retryChapter, BookStatus, fetchSummary } from "./api";
 
 export function useBookStatus(bookId: string | null) {
   return useQuery({
@@ -33,11 +28,17 @@ export function useChapterSummary(
 ) {
   return useQuery({
     queryKey: ["book", bookId, "chapter", chapterId],
-    queryFn: () => getChapterSummary(bookId!, chapterId!),
+    queryFn: () => fetchSummary(bookId!, 1, chapterId),
     // Only run query if we have both IDs
     enabled: !!bookId && !!chapterId,
     // Don't refetch on window focus since content won't change
     refetchOnWindowFocus: false,
+    select: (data) => ({
+      id: chapterId!,
+      title: `Chapter ${chapterId!.split("-")[1]}`,
+      content: data.text,
+      status: "complete" as const,
+    }),
   });
 }
 

@@ -15,8 +15,13 @@ export async function fetchSummary(
   const response = await fetch(`${API_URL}/api/summary/${bookId}?${params}`);
 
   if (!response.ok) {
-    throw new Error("Failed to fetch summary");
+    const error = await response.text();
+    throw new Error(`Failed to fetch summary: ${error}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  return {
+    text: data.text || "",
+    sections: data.sections || [],
+  };
 }

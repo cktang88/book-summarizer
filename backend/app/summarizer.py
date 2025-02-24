@@ -37,7 +37,7 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
         raise ValueError("Depth must be between 1 and 4")
 
     system_prompt = """
-    You are an efficient book summarizer. You will be given a chapter from a book, although sometimes you will be accidentally given the book preface or other non-chapter content. In that case, just skip and say "N/A".
+    You are an efficient book summarizer. You will be given a chapter from a book, although sometimes you will be accidentally given the book metadata or acknowledgements or copyright, etc. which is not part of the story text. In that case, just skip and say "N/A". However, some fiction books have text like narrator dialogue or exposition or prologue or epilogue or preface, but IS fictional (story related), which you SHOULD summarize and should not skip.
     
     Your job is to summarize the chapter in a way that is easy to understand and to the point. Be extremely concise - fit as much information as possible into as few words as possible.
 

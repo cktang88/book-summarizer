@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Plus, Loader2 } from "lucide-react";
-import { ThemeProvider } from "@/components/theme-provider";
 import { Providers } from "@/components/providers";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/features/upload/components/file-upload";
@@ -10,6 +9,7 @@ import { SummaryPage } from "@/features/summary/pages/SummaryPage";
 import { BookList } from "@/features/books/components/BookList";
 import { useBooks } from "@/features/books/hooks/useBooks";
 import { Toaster } from "sonner";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 function App() {
   const [isUploading, setIsUploading] = useState(false);
@@ -46,30 +46,34 @@ function App() {
 
   if (selectedBookId) {
     return (
-      <ThemeProvider>
-        <Providers>
-          <main className="container mx-auto flex min-h-screen flex-col items-center p-4">
-            <div className="w-full">
+      <Providers>
+        <main className="container mx-auto flex min-h-screen flex-col items-center p-4">
+          <div className="w-full">
+            <div className="flex items-center justify-between mb-4">
               <button
                 onClick={handleReset}
-                className="mb-4 text-sm text-muted-foreground hover:text-foreground"
+                className="text-sm text-muted-foreground hover:text-foreground"
               >
                 ← Back to books
               </button>
-              <SummaryPage bookId={selectedBookId} />
+              <ThemeToggle />
             </div>
-          </main>
-        </Providers>
+            <SummaryPage bookId={selectedBookId} />
+          </div>
+        </main>
         <Toaster />
-      </ThemeProvider>
+      </Providers>
     );
   }
 
   return (
-    <ThemeProvider>
-      <Providers>
-        <main className="container mx-auto flex min-h-screen flex-col items-center p-4">
-          <div className="mb-8 text-center">
+    <Providers>
+      <main className="container mx-auto flex min-h-screen flex-col items-center p-4">
+        <div className="w-full max-w-5xl">
+          <div className="flex items-center justify-end mb-8">
+            <ThemeToggle />
+          </div>
+          <div className="text-center mb-8">
             <h1 className="mb-2 text-4xl font-bold">Book Summarizer</h1>
             <p className="text-lg text-muted-foreground">
               Get AI-powered summaries of your books
@@ -113,10 +117,10 @@ function App() {
               )}
             </div>
           )}
-        </main>
-      </Providers>
+        </div>
+      </main>
       <Toaster />
-    </ThemeProvider>
+    </Providers>
   );
 }
 

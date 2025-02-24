@@ -90,3 +90,25 @@ async def get_book_summary(book_id: str, depth: int = 1, section: str | None = N
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/books/{book_id}/non-chapters")
+async def get_non_chapters(book_id: str):
+    """Get list of chapter IDs that are marked as non-chapters in metadata"""
+    try:
+        # Get book details to verify it exists
+        book = book_service.get_book(book_id)
+
+        # Get non-chapters from metadata
+        non_chapters = [
+            f"chapter-{chapter['number']}"
+            for chapter in book["metadata"]["chapters"]
+            if chapter.get("isNonChapter", False)
+        ]
+
+        return {"non_chapters": non_chapters}
+
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -182,7 +182,12 @@ class DocumentProcessor:
             "file_type": file_type,
             "chapter_count": len(chapters),
             "chapters": [
-                {"number": i, "title": ch.title, "length": len(ch.content)}
+                {
+                    "number": i,
+                    "title": ch.title,
+                    "length": len(ch.content),
+                    "isNonChapter": False,  # Default to False, will be updated when we get N/A summary
+                }
                 for i, ch in enumerate(chapters, 1)
             ],
         }

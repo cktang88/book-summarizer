@@ -4,7 +4,13 @@ import {
   useQueryClient,
   Query,
 } from "@tanstack/react-query";
-import { getBookStatus, retryChapter, BookStatus, fetchSummary } from "./api";
+import {
+  getBookStatus,
+  retryChapter,
+  BookStatus,
+  fetchSummary,
+  getNonChapters,
+} from "./api";
 
 export function useBookStatus(bookId: string | null) {
   return useQuery({
@@ -127,5 +133,34 @@ export function useRetryChapter(bookId: string) {
         queryKey: ["book", bookId, "status"],
       });
     },
+  });
+}
+
+export function useNonChapters(bookId: string | null) {
+  const { data: status } = useBookStatus(bookId);
+
+  return useQuery({
+    queryKey: ["book", bookId, "non-chapters"],
+    queryFn: () => getNonChapters(bookId!),
+    enabled: !!bookId,
+    // Poll while we have chapters being processed
+    refetchInterval: () => {
+      // If we don't have status data yet, keep polling
+      if (!status) return 2000;
+
+      const hasProcessingChapters = status.chapters.some(
+        (ch) => ch.status === "processing" || ch.status === "pending"
+      );
+
+      // Keep polling if we have chapters still being processed
+      if (hasProcessingChapters) {
+        return 2000;
+      }
+
+      // Once all chapters are done, cache for 24 hours
+      return false;
+    },
+    // Cache for 24 hours once we stop polling
+    staleTime: 24 * 60 * 60 * 1000,
   });
 }

@@ -37,7 +37,9 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
         raise ValueError("Depth must be between 1 and 4")
 
     system_prompt = """
-    You are an efficient book summarizer. You will be given a chapter from a book. Your job is to summarize the chapter in a way that is easy to understand and to the point. Be extremely concise - fit as much information as possible into as few words as possible.
+    You are an efficient book summarizer. You will be given a chapter from a book, although sometimes you will be accidentally given the book preface or other non-chapter content. In that case, just skip and say "N/A".
+    
+    Your job is to summarize the chapter in a way that is easy to understand and to the point. Be extremely concise - fit as much information as possible into as few words as possible.
 
     If possible, try to use the author's voice and style, and choose words that convey the mood and tone of the chapter.
     
@@ -77,6 +79,7 @@ def summarize_chapter_file(
 ) -> str:
     """
     Read a chapter file and generate its summary, optionally saving to a file.
+    If the summary is "N/A", updates the metadata.json to mark this as a non-chapter.
 
     Args:
         chapter_path (str | Path): Path to the chapter text file
@@ -112,6 +115,35 @@ def summarize_chapter_file(
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(summary)
+
+        # If this is a depth-1 summary and it's "N/A", update the metadata
+        if depth == 1 and summary.strip() == "N/A":
+            try:
+                # Get book directory (2 levels up from summaries dir)
+                book_dir = output_path.parent.parent
+                metadata_path = book_dir / "metadata.json"
+
+                # Get chapter number from the output path
+                chapter_num = int(output_path.stem.split("-")[1])
+
+                # Update metadata
+                if metadata_path.exists():
+                    import json
+
+                    with open(metadata_path, "r") as f:
+                        metadata = json.load(f)
+
+                    # Update the isNonChapter flag for this chapter
+                    for chapter in metadata["chapters"]:
+                        if chapter["number"] == chapter_num:
+                            chapter["isNonChapter"] = True
+                            break
+
+                    # Save updated metadata
+                    with open(metadata_path, "w") as f:
+                        json.dump(metadata, f, indent=2)
+            except Exception as e:
+                print(f"Warning: Failed to update metadata for non-chapter: {e}")
 
     return summary
 

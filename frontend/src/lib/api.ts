@@ -60,6 +60,10 @@ export interface SummaryResponse {
   }>;
 }
 
+export interface NonChaptersResponse {
+  non_chapters: string[];
+}
+
 // API Client
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -144,4 +148,16 @@ export async function fetchSummary(
     depth: data.depth || 0,
     sections: data.sections || [],
   };
+}
+
+export async function getNonChapters(
+  bookId: string
+): Promise<NonChaptersResponse> {
+  const response = await fetch(`${API_URL}/api/books/${bookId}/non-chapters`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to get non-chapters: ${response.statusText}`);
+  }
+
+  return response.json();
 }

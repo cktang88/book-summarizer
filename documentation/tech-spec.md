@@ -21,6 +21,9 @@
   - **EPUB**: EbookLib for native epub parsing
   - **Other**: pandoc for mobi and other formats
 - **LLM**: Gemini flash 2
+  - Configurable depth levels (1-4)
+  - Smart non-chapter detection
+  - Rate limiting with exponential backoff
 - **Storage**: Local filesystem
 - **Processing**: Single-threaded queue with rate limiting
 
@@ -138,17 +141,18 @@ interface API {
 }
 
 interface BookMetadata {
+  title: string;
+  file_type: string; // "pdf" | "epub" | "mobi"
+  chapter_count: number;
   chapters: Array<{
+    number: number;
     title: string;
-    sections?: Array<{
-      title: string;
-      level: number;
-    }>;
+    length: number;
+    isNonChapter: boolean; // For prefaces, appendices, etc.
   }>;
-  format: string; // "pdf" | "epub" | "mobi"
-  pageCount?: number; // If available
-  author?: string; // If available
-  publishedDate?: string; // If available
+  pageCount?: number;
+  author?: string;
+  publishedDate?: string;
 }
 ```
 
@@ -161,6 +165,8 @@ interface BookMetadata {
    - Simple drag-drop zone + filepicker
    - Upload progress tracking
    - Error handling with toast notifications
+   - File type validation (PDF/EPUB/MOBI)
+   - Size limit validation (500MB+)
 
 2. **SummaryView**
 
@@ -169,12 +175,23 @@ interface BookMetadata {
    - React Query integration for polling (2s interval)
    - Manual retry for failed chapters
    - Auto-stop polling when complete
+   - Client-side summary caching
+   - Depth controls (1-4 levels)
+   - Smooth transitions between depths
 
 3. **ProcessingStatus**
+
    - Overall progress indicator
    - Per-chapter status badges
    - Auto-refresh via React Query
    - Manual retry support for failed chapters
+   - Non-chapter detection and handling
+
+4. **ThemeProvider**
+   - System/light/dark mode detection
+   - Custom warm/navy theme
+   - Persistent theme preference
+   - Smooth theme transitions
 
 ### Backend
 
@@ -182,6 +199,8 @@ interface BookMetadata {
 
    - Convert PDF to text
    - Basic chapter detection
+   - Metadata extraction
+   - Multi-format support (PDF/EPUB/MOBI)
 
 2. **Summarizer**
 
@@ -189,13 +208,18 @@ interface BookMetadata {
    - Text chunking
    - Simple file-based cache
    - Background processing queue
+   - Smart non-chapter detection
+   - Four depth levels with custom prompts
+   - Metadata updates for non-chapters
 
 3. **ProcessingQueue**
    - Single-threaded chapter processing
    - Configurable rate limiting (default: 1 request/second)
+   - Exponential backoff for rate limits
    - Cache checking before API calls
    - Manual retry support for failed chapters
    - Status tracking per chapter
+   - Non-chapter handling
 
 ## Data Storage
 
@@ -302,25 +326,17 @@ interface BookStorage {
 
 ```typescript
 interface ProcessingStatus {
-  bookId: string;
-  totalChapters: number;
-  completedChapters: number;
-  chapters: Array<{
-    id: string;
-    title: string;
-    status: "pending" | "processing" | "complete";
-    error?: string;
-    startedAt?: string;
-    completedAt?: string;
-  }>;
+  status: "pending" | "processing" | "complete" | "error";
+  title: string;
+  error?: string;
 }
 
 interface ChapterSummary {
   id: string;
   title: string;
-  content: string | null;
-  status: "pending" | "processing" | "complete";
-  error?: string;
+  content: string;
+  depth: number; // 1-4
+  sections?: ChapterSummary[];
 }
 ```
 

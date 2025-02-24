@@ -22,6 +22,12 @@ The Book Summarizer is an interactive web application that allows users to uploa
 - Each chapter gets its own summary
 - Summaries are generated using Google's Gemini flash 2 LLM
 - Summaries are cached locally to prevent redundant API calls
+- Smart non-chapter detection (prefaces, appendices, etc.)
+- Four distinct summary depth levels:
+  - Level 1: Very high level (2-3 sentences)
+  - Level 2: Key points (1-2 paragraphs)
+  - Level 3: Detailed summary (3-4 paragraphs)
+  - Level 4: Comprehensive analysis (5+ paragraphs)
 - Chapters are processed lazily in the background:
   - Chapter list is shown immediately after book upload
   - Summaries are generated one at a time (configurable rate limit)
@@ -42,6 +48,8 @@ The Book Summarizer is an interactive web application that allows users to uploa
 - Background processing occurs at controlled rate (configurable, default: 1/second)
 - Frontend polls until all chapters complete (2-second interval)
 - Toast notifications for important events
+- Client-side summary caching for instant loading of previously viewed depths
+- Dark/light mode support with custom warm/navy theme
 
 ### 4. Storage System
 
@@ -102,7 +110,9 @@ The Book Summarizer is an interactive web application that allows users to uploa
 ### Main Interface
 
 - Clean, minimalist design
-- Dark/light mode support
+- Dark/light mode support with custom warm/navy theme
+  - Light mode: Warm tan/paper theme
+  - Dark mode: Grayish navy theme
 - Clear visual hierarchy
 - Responsive design for all screen sizes
 

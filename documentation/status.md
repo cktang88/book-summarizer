@@ -41,7 +41,7 @@
 - [ ] Implement smart chapter detection
   - [x] Create chapter boundary detection algorithm
   - [x] Handle epub chapter markers natively
-  - [ ] Handle PDF chapter markers
+  - [x] Handle PDF chapter markers
   - [x] Implement section/subsection detection
   - [x] Add metadata extraction (title, chapters, sections)
 - [x] Build upload endpoint

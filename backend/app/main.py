@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 
 from .api.routes.upload import router as upload_router
+from .api.routes.books import router as books_router
+from .api.routes.summary import router as summary_router
 
 # Load environment variables
 load_dotenv()
@@ -28,6 +30,8 @@ app.mount("/books", StaticFiles(directory=str(books_dir)), name="books")
 
 # Include routers
 app.include_router(upload_router, prefix="/api", tags=["upload"])
+app.include_router(books_router, prefix="/api", tags=["books"])
+app.include_router(summary_router, prefix="/api", tags=["summary"])
 
 
 @app.get("/")

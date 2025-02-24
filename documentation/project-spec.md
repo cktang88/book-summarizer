@@ -131,9 +131,8 @@ The Book Summarizer is an interactive web application that allows users to uploa
 ## Future Considerations
 
 - User accounts for saving summaries
-- Multiple book management
 - Summary sharing capabilities
 - Additional file format support
-- Custom summary depth settings
+- Custom default summary depth settings
 - Export functionality
-- Collaborative annotations
+- support nonfiction books, which have different summarization prompts

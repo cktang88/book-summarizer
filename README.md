@@ -5,9 +5,12 @@ An interactive web application that generates AI-powered summaries of books with
 ## Features
 
 - Upload PDF/epub/mobi books
-- AI-powered summary generation using Gemini
-- Interactive, expandable summary interface
-- Caching system for processed books and summaries
+- AI-powered summary generation via OpenRouter (default model: Google Gemini)
+- Interactive, expandable summary interface with multiple depth levels (1–4)
+- Pregenerate summaries for an entire book in parallel
+- Resummarize individual chapters on demand
+- Prompt caching to reduce token costs on repeated calls
+- Caching system for processed books and summaries on local filesystem
 
 ## Tech Stack
 
@@ -21,7 +24,7 @@ An interactive web application that generates AI-powered summaries of books with
 
 - Python + FastAPI
 - PyPDF2/pandoc for document processing
-- Google Gemini for AI summaries
+- OpenRouter (OpenAI-compatible API) for LLM calls; default model `google/gemini-3.1-flash-lite-preview`
 - Local filesystem storage
 
 ## Development Setup
@@ -30,7 +33,7 @@ An interactive web application that generates AI-powered summaries of books with
 
 - Node.js
 - Python 3.11+
-- Google Gemini API key
+- OpenRouter API key (https://openrouter.ai/)
 - Make (for running development commands)
 - pnpm (for frontend package management)
 
@@ -61,7 +64,7 @@ cd backend
 # Install uv package manager if not already installed
 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv pip install -r requirements.txt
-# Set up your .env file with your Gemini API key
+# Set up your .env file with your OpenRouter API key
 uvicorn app.main:app --reload
 ```
 
@@ -74,6 +77,18 @@ uvicorn app.main:app --reload
 - `make dev-frontend` - Run frontend only
 - `make dev-backend` - Run backend only
 - `make clean` - Clean up generated files and dependencies
+- `make test-summarizer CHAPTER_FILE=...` - Run the summarizer at all depth levels for a single chapter
+
+### Pregenerating Summaries
+
+Pregenerate summaries at every depth (1–4) for every chapter of a book:
+
+```bash
+cd backend
+. .venv/bin/activate
+python -m scripts.pregenerate_summaries "books/<book-folder>" --workers 4
+# Optional flags: --override (regenerate existing), --depths 1 2 (subset)
+```
 
 ### Environment Variables
 
@@ -86,7 +101,7 @@ VITE_API_URL=http://localhost:8000
 Backend (.env):
 
 ```
-GEMINI_API_KEY=your-api-key-here
+OPENROUTER_API_KEY=your-api-key-here
 BOOKS_DIR=./books
 ```
 
@@ -103,10 +118,15 @@ BOOKS_DIR=./books
 
 /backend
   /app
+    /api            # FastAPI route handlers
+    /services       # Business logic
+    /utils          # Shared helpers
     main.py         # FastAPI application
-    processor.py    # PDF processing
-    summarizer.py   # Gemini integration
-  /books           # Book storage
+    processor.py    # PDF/epub processing
+    summarizer.py   # OpenRouter LLM integration
+  /scripts
+    pregenerate_summaries.py  # Bulk pregeneration script
+  /books            # Book storage (chapters, summaries, metadata)
   requirements.txt
 ```
 

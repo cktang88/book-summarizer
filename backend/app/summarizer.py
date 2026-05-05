@@ -138,13 +138,9 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
     """,
     }
 
-    user_prompt = f"""
-    {depth_prompts[depth]}
+    chapter_block = f'Chapter text:\n"""\n{chapter_text}\n"""'
 
-    Chapter text:
-    \"\"\"
-    {chapter_text}
-    \"\"\"
+    depth_block = f"""{depth_prompts[depth]}
 
     <IMPORTANT>
     Be sure to vary sentence length and rhythm so the writing sings (eg. Gary Provost's writing advice).
@@ -155,8 +151,27 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
         response = client.chat.completions.create(
             model=MODEL_NAME,
             messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
+                {
+                    "role": "system",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": system_prompt,
+                            "cache_control": {"type": "ephemeral"},
+                        },
+                    ],
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": chapter_block,
+                            "cache_control": {"type": "ephemeral"},
+                        },
+                        {"type": "text", "text": depth_block},
+                    ],
+                },
             ],
         )
         return response.choices[0].message.content

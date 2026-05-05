@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useBookStatus,
   useRetryChapter,
@@ -70,6 +72,25 @@ export function ChapterList({
   const { data: nonChaptersData } = useNonChapters(bookId);
   const retryMutation = useRetryChapter(bookId);
   const deleteMutation = useDeleteChapterSummaries(bookId);
+  const queryClient = useQueryClient();
+  const prevStatusRef = useRef<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!status) return;
+    const prev = prevStatusRef.current;
+    const next: Record<string, string> = {};
+    for (const ch of status.chapters) {
+      next[ch.id] = ch.status;
+      const wasProcessing =
+        prev[ch.id] === "pending" || prev[ch.id] === "processing";
+      if (wasProcessing && ch.status === "complete") {
+        queryClient.invalidateQueries({
+          queryKey: ["book", bookId, "chapter", ch.id],
+        });
+      }
+    }
+    prevStatusRef.current = next;
+  }, [status, bookId, queryClient]);
 
   const handleRetry = async (e: React.MouseEvent, chapterId: string) => {
     e.stopPropagation(); // Prevent card expansion when clicking retry

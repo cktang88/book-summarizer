@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Plus, Minus, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SummarySection } from "../types";
@@ -16,6 +16,10 @@ interface SectionProps {
 function Section({ bookId, section: initialSection, level }: SectionProps) {
   const [section, setSection] = useState(initialSection);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setSection(initialSection);
+  }, [initialSection]);
 
   const handleDepthChange = useCallback(
     async (increase: boolean) => {

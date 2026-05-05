@@ -64,13 +64,25 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
 
     Do not spoil beyond the provided text. Do not invent unsupported motives, lore, or future consequences.
 
-    Directly output only the requested summary. Do not include filler such as "Here is the summary."
+    Directly output only the requested summary. Do not include filler such as "Here is the summary.
+    
+    Write with rhythm. Mix short, medium, and long sentences. Use short sentences for impact, reversals, emotional beats, and major changes. Use longer sentences only when building cause, consequence, or layered meaning.
+
+    The recap should sound like an intelligent friend explaining the chapter, not a school essay, encyclopedia entry, or publisher synopsis.
+
+    Avoid summary sludge: "this chapter establishes," "this episode highlights," "serves to show," "underscores," "deepens the mystery," "sets the stage," "signaling that," "the revelation of," "the dynamic between," "the intersection of," "the nature of."
+
+    Prefer concrete story language:
+    Good: "Jean escapes. That should feel like freedom, but it does not. Mieli has bought him out of hell for a job, and the Archons are already coming after them."
+    Bad: "Jean's extraction establishes his precarious freedom and signals future conflict."
+
+    Before finalizing, silently check the rhythm. If the sentences are all similar length or sound like a book report, rewrite them.
     """
 
     # Create prompt based on depth
     depth_prompts = {
         1: """
-    Write a short 2-3 sentence summary.
+    Write a SHORT 2-3 sentence summary.
 
     Include only:
     - The central event or revelation
@@ -78,7 +90,7 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
     - Why the chapter matters going forward
     """,
         2: """
-    Write a concise 5-7 sentence summary.
+    Write a concise 6-8 sentence summary.
 
     Include:
     - Main events
@@ -133,6 +145,10 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
     \"\"\"
     {chapter_text}
     \"\"\"
+
+    <IMPORTANT>
+    Be sure to vary sentence length and rhythm so the writing sings (eg. Gary Provost's writing advice).
+    </IMPORTANT>
     """
 
     try:

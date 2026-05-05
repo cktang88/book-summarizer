@@ -124,6 +124,14 @@ class DocumentProcessor:
             # Get chapter content
             content = soup.get_text().strip()
 
+            # Skip filler/stub documents (title pages, blank wrappers between
+            # real chapters). PDF and mobi parsers don't produce these because
+            # they split on chapter markers; epub iterates the full spine, so
+            # filter them out structurally here instead of relying on the
+            # downstream LLM N/A check.
+            if len(content) < 200:
+                continue
+
             if content:  # Only add non-empty chapters
                 chapters.append(
                     Chapter(

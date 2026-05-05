@@ -1,20 +1,22 @@
 import os
-import google.generativeai as genai
 from pathlib import Path
 from typing import Optional
 from dotenv import load_dotenv
+from openai import OpenAI
 
 # Load environment variables
 load_dotenv()
 
-# Configure Gemini
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY environment variable is not set")
+# Configure OpenRouter
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+if not OPENROUTER_API_KEY:
+    raise ValueError("OPENROUTER_API_KEY environment variable is not set")
 
-genai.configure(api_key=GEMINI_API_KEY)
-# model = genai.GenerativeModel("gemini-2")
-model = genai.GenerativeModel("gemini-2.0-flash-001")
+MODEL_NAME = "google/gemini-3.1-flash-lite-preview"
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY,
+)
 
 
 def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
@@ -65,11 +67,17 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
         ),
     }
 
-    prompt = system_prompt + "\n\n" + depth_prompts[depth] + "\n\n" + chapter_text
+    user_prompt = depth_prompts[depth] + "\n\n" + chapter_text
 
     try:
-        response = model.generate_content(prompt)
-        return response.text
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+        )
+        return response.choices[0].message.content
     except Exception as e:
         raise Exception(f"Error generating summary: {str(e)}")
 

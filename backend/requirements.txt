@@ -3,7 +3,7 @@ uvicorn==0.27.1
 python-multipart==0.0.9  # For file uploads
 PyPDF2>=3.0.0
 pandoc==2.3
-google-generativeai==0.3.2
+openai>=1.40.0
 python-dotenv==1.0.1
 pypandoc>=1.12
 aiofiles==23.2.1  # For async file operations

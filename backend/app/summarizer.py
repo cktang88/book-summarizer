@@ -39,35 +39,101 @@ def summarize_chapter(chapter_text: str, depth: int = 1) -> str:
         raise ValueError("Depth must be between 1 and 4")
 
     system_prompt = """
-    You are an efficient book summarizer. You will be given a chapter from a book, although sometimes you will be accidentally given the book metadata or acknowledgements or copyright, etc. which is not part of the story text. In that case, just skip and say "N/A". However, some fiction books have text like narrator dialogue or exposition or prologue or epilogue or preface, but IS fictional (story related), which you SHOULD summarize and should not skip.
-    
-    Your job is to summarize the chapter in a way that is easy to understand and to the point. Recognize what is the most important information in each chapter and convey that. Not every tiny detail is important. However, things like emotional events and emotional state, conflicts, motivations, shocking events may be salient.
+    You are a precise literary-analysis summarizer for long, complex fiction series.
 
-    Try to use the author's voice and style, and choose exact and impactful words that convey the mood and tone of the chapter, but don't use too complex vocabulary. Vary your sentence lengths, make the writing flow well, don't use too many commas.
+    You will receive one chapter or excerpt from a book. Sometimes the input may accidentally contain non-story material such as copyright, publishing metadata, table of contents, praise blurbs, advertisements, ISBN data, real-world acknowledgements, or unrelated front/back matter. If the input is clearly non-story material, output exactly:
+    N/A
 
-    Directly state ONLY the summary, DO NOT include any filler words like `this passage says...` or any preface like "okay, here's a summary...".
-    
-    Be sure to describe all main events, new characters appearances and characterizations, locations, important realizations by characters, any peculiar narrator musings, etc.
+    Do not output N/A for fictional prologues, epilogues, interludes, framing devices, invented documents, songs, poems, letters, histories, prophecies, maps legends, dramatis personae, or in-world exposition. These are story-relevant and should be summarized.
 
-    If any important character motivations or internal or external conflicts are revealed, describe them.
+    Your job is to summarize the chapter in a way that supports understanding of a long, complex story. Do not merely recount events. Capture what changed, why it matters, and what should be remembered later.
 
-    Note POV shifts, time jumps, backstory narration, or format changes (letters, poems, etc.).
+    Include important information when it affects:
+    - Plot direction
+    - Character goals, motives, fears, emotions, contradictions, or development
+    - Relationships, trust, allegiance, status, power, knowledge, or danger
+    - Conflicts, decisions, realizations, secrets, mysteries, or foreshadowing
+    - New characters, factions, locations, cultures, institutions, or artifacts
+    - Worldbuilding, including magic, religion, politics, economics, history, geography, law, class, war, empire, trade, prophecy, or mythology
+    - Themes, especially tensions dramatized through character choices or world events
+    - POV shifts, time jumps, dreams, visions, flashbacks, letters, songs, poems, frame narratives, or unusual narrative forms
 
-    You must adhere to output length limits:
+    Omit tiny logistics and incidental details unless they later seem meaningful within the provided text.
 
+    Preserve the mood, tone, and emotional emphasis of the chapter without imitating the author's prose too closely. Write clearly and vividly. Use concrete causal language. Prefer explaining why events matter over listing everything that happened.
+
+    Do not spoil beyond the provided text. Do not invent unsupported motives, lore, or future consequences.
+
+    Directly output only the requested summary. Do not include filler such as "Here is the summary."
     """
 
     # Create prompt based on depth
     depth_prompts = {
-        1: "Write a short 2-3 sentence summary, include only on the most important events and developments. Feel free to omit minor details.",
-        2: "Length: 5-7 sentences:",
-        3: "Length: 3-4 paragraphs:",
-        4: (
-            "Give a comprehensive summary. First think of how to break up the chapter into sections (eg. each time the chapter switches POV or location changes). Then summarize each section individually and thoroughly. Be sure to include all important details:"
-        ),
+        1: """
+    Write a short 2-3 sentence summary.
+
+    Include only:
+    - The central event or revelation
+    - The most important character, plot, or world-state change
+    - Why the chapter matters going forward
+    """,
+        2: """
+    Write a concise 5-7 sentence summary.
+
+    Include:
+    - Main events
+    - Important character motivations, emotions, conflicts, or realizations
+    - Major changes in relationships, knowledge, power, danger, or plot direction
+    - Important worldbuilding, mystery, or foreshadowing
+    - The chapter's main thematic or tonal function, if clear
+    """,
+        3: """
+    Write 3-4 compact paragraphs.
+
+    Cover:
+    - What happens and why it matters
+    - Character movement, including goals, emotions, conflicts, relationships, or identity changes
+    - World/story implications, including politics, history, magic, culture, institutions, mysteries, or foreshadowing
+    - Thematic or tonal significance, if important
+
+    Do not summarize paragraph by paragraph or scene by scene.
+    """,
+        4: """
+    Write a comprehensive structured summary using these headings:
+
+    Core Summary:
+    Summarize the major events and developments clearly.
+
+    What Changed:
+    List the important changes caused by this chapter: character state, relationships, knowledge, power, danger, location, allegiance, politics, world understanding, or unresolved threads.
+
+    Character Movement:
+    For each important character, describe their goal, emotional state, conflict, decision, realization, or change.
+
+    World / Politics / Lore:
+    Capture important worldbuilding, political dynamics, economic pressures, historical context, magic rules, religious ideas, military realities, geography, culture, institutions, or factional tensions.
+
+    Mysteries / Foreshadowing / Open Threads:
+    List new clues, unanswered questions, prophecies, secrets, suspicious details, or setup for later consequences.
+
+    Themes / Authorial Function:
+    Explain what larger ideas or tensions the chapter dramatizes. Tie the theme to specific events or characters.
+
+    Narrative Form / POV Notes:
+    Note POV shifts, time jumps, dreams, visions, letters, songs, poems, flashbacks, unusual narration, or tonal shifts.
+
+    Prioritize significance over exhaustive scene coverage.
+    """,
     }
 
-    user_prompt = depth_prompts[depth] + "\n\n" + chapter_text
+    user_prompt = f"""
+    {depth_prompts[depth]}
+
+    Chapter text:
+    \"\"\"
+    {chapter_text}
+    \"\"\"
+    """
 
     try:
         response = client.chat.completions.create(

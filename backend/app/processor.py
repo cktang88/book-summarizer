@@ -1,8 +1,9 @@
 import os
 import json
 import re
+import shutil
 from pathlib import Path
-from typing import Literal, cast, List, Optional, Dict
+from typing import Literal, cast, List, Optional, Dict, Tuple
 from dataclasses import dataclass
 
 import PyPDF2 as pypdf
@@ -12,6 +13,11 @@ from ebooklib import epub
 from bs4 import BeautifulSoup
 from fastapi import UploadFile
 import subprocess
+
+try:
+    import mobi as mobi_lib
+except ImportError:
+    mobi_lib = None
 
 FileType = Literal["pdf", "epub", "mobi"]
 OutputFormat = Literal["text", "markdown"]
@@ -131,6 +137,99 @@ class DocumentProcessor:
 
         return ("\n\n".join(text_content), "\n\n".join(markdown_content), chapters)
 
+    def _process_mobi(self, file_path: Path) -> Tuple[str, str, List[Chapter]]:
+        """Process mobi file by extracting it via the `mobi` library and
+        splitting the resulting HTML on the chapter anchors listed in toc.ncx.
+
+        Returns a tuple of (text_content, markdown_content, chapters).
+        """
+        if mobi_lib is None:
+            raise RuntimeError(
+                "The `mobi` package is not installed. Run `uv pip install mobi`."
+            )
+
+        tempdir, _ = mobi_lib.extract(str(file_path))
+        try:
+            extracted = Path(tempdir)
+            html_path = next(extracted.rglob("book.html"), None) or next(
+                extracted.rglob("*.html"), None
+            )
+            if html_path is None:
+                raise RuntimeError("No HTML found in extracted mobi")
+            html = html_path.read_text(encoding="utf-8", errors="replace")
+
+            # Pull chapter anchors from toc.ncx (preferred). Fall back to all
+            # filepos anchors if no toc is present.
+            toc_path = next(extracted.rglob("toc.ncx"), None)
+            chapter_specs: List[Tuple[str, str]] = []  # (title, anchor_id)
+            if toc_path is not None:
+                toc_soup = BeautifulSoup(
+                    toc_path.read_text(encoding="utf-8", errors="replace"), "xml"
+                )
+                for nav in toc_soup.find_all("navPoint"):
+                    text_el = nav.find("text") or nav.find("navLabel")
+                    src_el = nav.find("content")
+                    if not text_el or not src_el:
+                        continue
+                    label = text_el.get_text().strip()
+                    src = src_el.get("src", "")
+                    anchor = src.split("#", 1)[1] if "#" in src else ""
+                    if label and anchor:
+                        chapter_specs.append((label, anchor))
+
+            chapters = self._split_html_by_anchors(html, chapter_specs)
+
+            # If splitting yielded nothing useful, fall back to treating the
+            # whole document as one chapter and let the regex detector run.
+            if not chapters:
+                soup = BeautifulSoup(html, "html.parser")
+                full_text = soup.get_text()
+                chapters = self._detect_chapters(full_text)
+
+            text_content = "\n\n".join(c.content for c in chapters)
+            markdown_content = html  # Raw HTML as the "markdown" payload.
+            return text_content, markdown_content, chapters
+        finally:
+            shutil.rmtree(tempdir, ignore_errors=True)
+
+    def _split_html_by_anchors(
+        self, html: str, chapter_specs: List[Tuple[str, str]]
+    ) -> List[Chapter]:
+        """Split a single HTML document into chapters using anchor IDs.
+
+        Each entry in chapter_specs is (chapter_title, anchor_id). The HTML is
+        sliced at the byte offset of each `id="<anchor>"` occurrence and each
+        slice is converted to plain text.
+        """
+        if not chapter_specs:
+            return []
+
+        # Locate each anchor's byte offset in the source HTML. Match the full
+        # opening tag (e.g. `<a id="filepos1583" />`) so the slice starts at a
+        # tag boundary rather than mid-attribute.
+        anchored: List[Tuple[str, int]] = []
+        for title, anchor in chapter_specs:
+            match = re.search(
+                rf'<[a-zA-Z]+[^>]*\bid=["\']{re.escape(anchor)}["\'][^>]*/?>',
+                html,
+            )
+            if match:
+                anchored.append((title, match.start()))
+
+        if not anchored:
+            return []
+
+        anchored.sort(key=lambda x: x[1])
+
+        chapters: List[Chapter] = []
+        for i, (title, start) in enumerate(anchored):
+            end = anchored[i + 1][1] if i + 1 < len(anchored) else len(html)
+            chunk_html = html[start:end]
+            text = BeautifulSoup(chunk_html, "html.parser").get_text().strip()
+            if text:
+                chapters.append(Chapter(title=title, content=text, start_page=i))
+        return chapters
+
     async def process_document(self, file: UploadFile) -> ProcessedDocument:
         """Process uploaded document and return processed content"""
         file_type = self._get_file_type(file.filename)
@@ -162,10 +261,8 @@ class DocumentProcessor:
             # Use dedicated epub processing
             text_content, markdown_content, chapters = self._process_epub(file_path)
         else:
-            # For other formats (mobi), still use pandoc
-            text_content = self._process_epub_mobi(file_path, file_type, "plain")
-            markdown_content = self._process_epub_mobi(file_path, file_type, "markdown")
-            chapters = self._detect_chapters(text_content)
+            # mobi: extract via the `mobi` library and split on toc.ncx anchors.
+            text_content, markdown_content, chapters = self._process_mobi(file_path)
 
         # Clean text content
         text_content = self._clean_text(text_content)

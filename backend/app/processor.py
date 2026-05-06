@@ -66,9 +66,11 @@ class DocumentProcessor:
         """Basic chapter detection"""
         chapters = []
 
-        # Simple regex for chapter detection
+        # Match a chapter heading line: "Chapter 12" / "CHAPTER XII" optionally
+        # followed by a subtitle on the same line. The match stops at the
+        # newline so we never absorb body text into the title.
         chapter_pattern = re.compile(
-            r"^(?:Chapter|CHAPTER)\s+(?:[0-9]+|[IVXLC]+)[.\s]*(.*?)(?:\n|$)",
+            r"^(?:Chapter|CHAPTER)\s+(?:[0-9]+|[IVXLC]+)\b[^\n]*",
             re.MULTILINE,
         )
 

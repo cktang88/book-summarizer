@@ -121,8 +121,11 @@ class DocumentProcessor:
                 else "Untitled Chapter"
             )
 
-            # Get chapter content
-            content = soup.get_text().strip()
+            # Use a newline separator so block-level boundaries survive into
+            # the text — chapter markers like "CHAPTER 1" are often plain
+            # <p> tags rather than headings, and we need them on their own
+            # line for _detect_chapters to recognise them.
+            content = soup.get_text(separator="\n").strip()
 
             # Skip filler/stub documents (title pages, blank wrappers between
             # real chapters). PDF and mobi parsers don't produce these because
@@ -132,12 +135,27 @@ class DocumentProcessor:
             if len(content) < 200:
                 continue
 
-            if content:  # Only add non-empty chapters
+            # Some epubs put many chapters into a single spine document
+            # (e.g. one doc per Part). If we find multiple "CHAPTER N"
+            # markers inside, split the doc.
+            sub_chapters = self._detect_chapters(content)
+            if len(sub_chapters) > 1:
+                for sub in sub_chapters:
+                    chapters.append(
+                        Chapter(
+                            title=sub.title,
+                            content=sub.content,
+                            start_page=len(chapters),
+                        )
+                    )
+                    text_content.append(sub.content)
+                    markdown_content.append(sub.content)
+            else:
                 chapters.append(
                     Chapter(
                         title=title,
                         content=content,
-                        start_page=len(chapters),  # Chapter index as page
+                        start_page=len(chapters),
                     )
                 )
                 text_content.append(content)
